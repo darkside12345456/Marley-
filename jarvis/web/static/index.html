@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>J.A.R.V.I.S.</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="grid-bg"></div>
+
+  <header class="hud-top">
+    <div class="brand">J.A.R.V.I.S.</div>
+    <div class="status" id="status">
+      <span class="dot" id="dot"></span>
+      <span id="statusText">a ligar…</span>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="reactor" id="reactor">
+      <canvas id="orb" width="520" height="520"></canvas>
+      <div class="state-label" id="stateLabel">EM ESPERA</div>
+    </div>
+  </main>
+
+  <section class="transcript" id="transcript"></section>
+
+  <footer class="controls">
+    <button id="micBtn" class="mic" title="Falar">
+      <span class="mic-icon">🎙️</span>
+    </button>
+    <input id="textInput" type="text" placeholder="Escreve ou fala com o Jarvis…" autocomplete="off" />
+    <button id="sendBtn" class="send">Enviar</button>
+    <button id="resetBtn" class="reset" title="Limpar memória da conversa">⟲</button>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

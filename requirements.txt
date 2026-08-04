@@ -1,0 +1,3 @@
+# Dependências mínimas para o HUD web do Jarvis.
+# O cérebro (Ollama) e as ferramentas usam só a biblioteca padrão do Python.
+flask>=3.0

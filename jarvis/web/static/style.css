@@ -1,0 +1,139 @@
+:root {
+  --cyan: #35e6ff;
+  --cyan-dim: #1a8ba3;
+  --blue: #0a1a2f;
+  --glow: 0 0 18px rgba(53, 230, 255, 0.55);
+  --bg: #030812;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Segoe UI", "Rajdhani", system-ui, sans-serif;
+  background: radial-gradient(ellipse at center, #071426 0%, var(--bg) 70%);
+  color: var(--cyan);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  letter-spacing: 0.5px;
+}
+
+/* Grelha holográfica de fundo */
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(53, 230, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(53, 230, 255, 0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  animation: drift 24s linear infinite;
+  z-index: 0;
+}
+@keyframes drift { from { background-position: 0 0; } to { background-position: 44px 44px; } }
+
+/* Topo */
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 28px;
+  z-index: 2;
+}
+.brand {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  text-shadow: var(--glow);
+}
+.status { display: flex; align-items: center; gap: 8px; font-size: 13px; text-transform: uppercase; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: #555; box-shadow: 0 0 8px #555; }
+.dot.online { background: #35ffa1; box-shadow: 0 0 10px #35ffa1; }
+.dot.offline { background: #ff5a5a; box-shadow: 0 0 10px #ff5a5a; }
+
+/* Palco central com o reator */
+.stage { flex: 1; display: flex; align-items: center; justify-content: center; z-index: 1; }
+.reactor { position: relative; width: 520px; max-width: 90vw; text-align: center; }
+#orb { max-width: 90vw; height: auto; filter: drop-shadow(0 0 30px rgba(53, 230, 255, 0.35)); }
+.state-label {
+  position: absolute;
+  bottom: 6%;
+  left: 0; right: 0;
+  font-size: 15px;
+  letter-spacing: 5px;
+  text-shadow: var(--glow);
+  transition: color .3s;
+}
+
+/* Transcrição */
+.transcript {
+  position: absolute;
+  right: 24px;
+  top: 90px;
+  bottom: 110px;
+  width: min(360px, 34vw);
+  overflow-y: auto;
+  padding: 10px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  mask-image: linear-gradient(black 85%, transparent);
+}
+.msg {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  backdrop-filter: blur(4px);
+  animation: fadeIn .3s ease;
+}
+.msg.user { align-self: flex-end; background: rgba(53, 230, 255, 0.12); border: 1px solid rgba(53,230,255,.3); }
+.msg.bot { align-self: flex-start; background: rgba(10, 26, 47, 0.7); border: 1px solid rgba(53,230,255,.18); color: #cdefff; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to {opacity:1;transform:none;} }
+.transcript::-webkit-scrollbar { width: 5px; }
+.transcript::-webkit-scrollbar-thumb { background: var(--cyan-dim); border-radius: 3px; }
+
+/* Controlos */
+.controls {
+  display: flex;
+  gap: 12px;
+  padding: 18px 28px 26px;
+  align-items: center;
+  z-index: 2;
+  max-width: 780px;
+  width: 100%;
+  margin: 0 auto;
+}
+#textInput {
+  flex: 1;
+  background: rgba(10, 26, 47, 0.6);
+  border: 1px solid var(--cyan-dim);
+  color: var(--cyan);
+  padding: 14px 18px;
+  border-radius: 30px;
+  font-size: 15px;
+  outline: none;
+}
+#textInput:focus { border-color: var(--cyan); box-shadow: var(--glow); }
+button {
+  cursor: pointer;
+  border: 1px solid var(--cyan-dim);
+  background: rgba(10, 26, 47, 0.6);
+  color: var(--cyan);
+  border-radius: 30px;
+  padding: 12px 20px;
+  font-size: 15px;
+  transition: all .2s;
+}
+button:hover { border-color: var(--cyan); box-shadow: var(--glow); }
+.mic { width: 52px; height: 52px; border-radius: 50%; padding: 0; font-size: 20px; }
+.mic.listening { background: rgba(53, 230, 255, 0.25); box-shadow: 0 0 24px var(--cyan); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.08);} }
+.reset { width: 46px; padding: 0; height: 46px; border-radius: 50%; }
+
+@media (max-width: 720px) {
+  .transcript { position: static; width: auto; margin: 0 16px; height: 22vh; }
+  .reactor { width: 300px; }
+}
