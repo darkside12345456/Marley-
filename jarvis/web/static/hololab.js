@@ -143,6 +143,7 @@
 
   // instancias: [{v, e, cor, escala, pos:[x,y,z]}]
   let instancias = [], ang = 0, tilt = 0.5, running = false;
+  let zoomFactor = 1, autoRotate = true, dragging = false, px = 0, py = 0;
 
   function projeta(p, cx, cy, zoom) {
     let [x, y, z] = p;
@@ -156,9 +157,9 @@
 
   function frame() {
     if (!running || !instancias.length) return;
-    const w = canvas.width, h = canvas.height, cx = w / 2, cy = h / 2, zoom = w * 0.3;
+    const w = canvas.width, h = canvas.height, cx = w / 2, cy = h / 2, zoom = w * 0.3 * zoomFactor;
     ctx.clearRect(0, 0, w, h);
-    ang += 0.012;
+    if (autoRotate && !dragging) ang += 0.012;
 
     for (const inst of instancias) {
       const trans = (p) => [
@@ -222,9 +223,62 @@
 
   function hide() { running = false; panel.classList.add("hidden"); }
 
+  // ---- Exportar o que está no ecrã para .obj (wireframe) ----
+  function exportOBJ() {
+    if (!instancias.length) return;
+    const out = ["# Exportado pelo Jarvis Holo-Lab"];
+    let offset = 0;
+    instancias.forEach((inst, ii) => {
+      out.push("o parte" + (ii + 1));
+      for (const p of inst.v) {
+        const x = p[0] * inst.escala + inst.pos[0];
+        const y = p[1] * inst.escala + inst.pos[1];
+        const z = p[2] * inst.escala + inst.pos[2];
+        out.push(`v ${x.toFixed(5)} ${y.toFixed(5)} ${z.toFixed(5)}`);
+      }
+      for (const [a, b] of inst.e) out.push(`l ${a + 1 + offset} ${b + 1 + offset}`);
+      offset += inst.v.length;
+    });
+    const blob = new Blob([out.join("\n") + "\n"], { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "holo-lab.obj";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
   window.HoloLab = { show, showScene, hide };
 
   document.getElementById("holoClose").addEventListener("click", hide);
+  const expBtn = document.getElementById("holoExport");
+  if (expBtn) expBtn.addEventListener("click", exportOBJ);
   const sel = document.getElementById("holoSelect");
   if (sel) sel.addEventListener("change", () => show(sel.value, null, "#35e6ff"));
+
+  // ---- Controlo por rato/toque: rodar e zoom ----
+  function pointerDown(e) {
+    dragging = true;
+    px = e.clientX ?? e.touches[0].clientX;
+    py = e.clientY ?? e.touches[0].clientY;
+  }
+  function pointerMove(e) {
+    if (!dragging) return;
+    const x = e.clientX ?? e.touches[0].clientX;
+    const y = e.clientY ?? e.touches[0].clientY;
+    ang += (x - px) * 0.01;
+    tilt = Math.max(-1.4, Math.min(1.4, tilt + (y - py) * 0.01));
+    px = x; py = y;
+  }
+  function pointerUp() { dragging = false; }
+
+  canvas.addEventListener("mousedown", pointerDown);
+  window.addEventListener("mousemove", pointerMove);
+  window.addEventListener("mouseup", pointerUp);
+  canvas.addEventListener("touchstart", pointerDown, { passive: true });
+  canvas.addEventListener("touchmove", pointerMove, { passive: true });
+  canvas.addEventListener("touchend", pointerUp);
+  canvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    zoomFactor = Math.max(0.4, Math.min(3, zoomFactor * (e.deltaY < 0 ? 1.1 : 0.9)));
+  }, { passive: false });
 })();

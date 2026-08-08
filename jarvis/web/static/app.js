@@ -256,6 +256,24 @@
   checkStatus();
   setInterval(checkStatus, 8000);
 
+  // ---- Monitorização de segurança automática (se agendada) ----
+  let ultimaSegTs = null;
+  async function checkSecurity() {
+    try {
+      const r = await fetch("/api/security/last");
+      const s = await r.json();
+      if (s.ativo && s.ultima && s.ultima.ts !== ultimaSegTs) {
+        ultimaSegTs = s.ultima.ts;
+        if (s.ultima.nivel && s.ultima.nivel !== "BAIXO") {
+          addPanel("🛡️ Alerta de segurança automático", s.ultima.relatorio || "");
+          speak("Atenção, senhor. A verificação automática detetou algo que merece atenção.");
+        }
+      }
+    } catch { /* ignora */ }
+  }
+  checkSecurity();
+  setInterval(checkSecurity, 30000);
+
   // Saudação inicial
   setTimeout(() => {
     const hi = "Sistemas online. Bom dia, senhor. Em que posso ajudar?";

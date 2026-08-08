@@ -97,8 +97,10 @@ python -m jarvis voz
 | `memorizar` / `recordar` | Guarda e recupera factos sobre ti |
 | `abrir_pagina` | Abre um site ou pesquisa no ecrã |
 | `construir_modelo` / `construir_cena` | Projeta peças 3D no Holo-Lab (com tamanho/cor/composição) |
-| `criar_projeto` | Cria uma aplicação (web, python, flask, node) na sandbox |
+| `criar_projeto` | Cria uma aplicação (web, react, python, flask, node, api) na sandbox |
+| `exportar_modelo` | Exporta uma peça 3D para `.obj` (impressão 3D) |
 | `verificar_ameacas` / `analisar_processos` / `analisar_rede` / `analisar_ficheiros` / `calcular_hash` | Cibersegurança (só de leitura) |
+| `agendar_verificacao` / `estado_seguranca` | Verificações de segurança automáticas |
 | `executar_comando` | Comandos do sistema — **desligado por omissão** |
 
 ### 🔬 Holo-Lab (peças 3D estilo filme)
@@ -111,15 +113,24 @@ Ele projeta a peça num **wireframe holográfico a rodar**. Também tens um bot�
 🔬 no HUD para abrir o Holo-Lab e trocar de peça manualmente (reator, capacete,
 manopla, núcleo, anel, motor, estrutura).
 
-> Nota: isto é **visualização 3D**, não fabrico físico — software desenha e
-> mostra, não constrói o objeto real.
+**Controlos:** arrasta com o rato para **rodar** e usa a **roda do rato para
+zoom** (funciona também por toque no telemóvel).
+
+**Exportar para impressão 3D:** botão **⬇ .obj** no Holo-Lab, ou pede
+*"exporta o reator para .obj"*. Gera um ficheiro `.obj` (formato 3D aberto) na
+área de trabalho; as peças sólidas saem com faces prontas para um fatiador.
+
+> Nota: isto é **visualização e modelação 3D**, não fabrico físico — o software
+> desenha, mostra e exporta o modelo; a impressão é feita pela tua impressora 3D
+> a partir do ficheiro `.obj`.
 
 ### 🧩 Criar aplicações
 
 > "Cria-me uma app web chamada Agenda" · "Faz um projeto flask chamado api"
 
 O Jarvis gera a estrutura do projeto dentro de `workspace/` (isolado do resto do
-PC). Tipos: **web, python, flask, node**. As apps **web** abrem logo no browser.
+PC). Tipos: **web, react, python, flask, node, api** (Flask + SQLite com CRUD).
+As apps **web** e **react** abrem logo no browser.
 
 ### 🛡️ Cibersegurança (verificar ameaças)
 
@@ -139,6 +150,11 @@ Para análise completa de processos e rede, instala o `psutil` (opcional):
 ```bash
 pip install -r requirements-seg.txt
 ```
+
+**Verificações automáticas:** pede *"verifica a segurança a cada 6 horas"* (ou
+usa `JARVIS_SECURITY_INTERVAL` no `.env`). O Jarvis passa a verificar em segundo
+plano, guarda um registo em `data/security_log.jsonl` e **avisa-te no HUD** (por
+voz e num painel) se o risco subir.
 
 ### ⚠️ Comandos do sistema
 

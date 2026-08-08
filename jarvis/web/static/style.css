@@ -159,7 +159,10 @@ button:hover { border-color: var(--cyan); box-shadow: var(--glow); }
   height: auto;
   filter: drop-shadow(0 0 26px rgba(53, 230, 255, 0.35));
 }
-.holo-controls { display: flex; gap: 12px; margin-top: 6px; }
+.holo-hint { font-size: 11px; opacity: .6; margin-top: 4px; letter-spacing: 1px; }
+.holo-controls { display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap; justify-content: center; }
+#holoCanvas { cursor: grab; touch-action: none; }
+#holoCanvas:active { cursor: grabbing; }
 .holo-controls select {
   background: rgba(10, 26, 47, 0.7);
   color: var(--cyan);

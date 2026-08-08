@@ -14,6 +14,9 @@ from . import browser as browser_mod
 from . import holo as holo_mod
 from . import projects as projects_mod
 from .. import security as security_mod
+from .. import mesh as mesh_mod
+from ..config import WORKSPACE_DIR
+from ..scheduler import get_scheduler
 
 
 @dataclass
@@ -310,18 +313,76 @@ def build_default_registry(memory=None, allow_shell: bool = False, actions=None)
     reg.register(
         "criar_projeto",
         "Cria uma aplicação/projeto a partir de um modelo, dentro da área de "
-        "trabalho segura. Tipos: web, python, flask, node. As apps 'web' abrem "
-        "automaticamente no browser.",
+        "trabalho segura. Tipos: web, react, python, flask, node, api (Flask+SQLite). "
+        "As apps 'web' e 'react' abrem automaticamente no browser.",
         {
             "type": "object",
             "properties": {
                 "nome": {"type": "string"},
-                "tipo": {"type": "string", "description": "web, python, flask ou node"},
+                "tipo": {"type": "string", "description": "web, react, python, flask, node ou api"},
                 "descricao": {"type": "string"},
             },
             "required": ["nome"],
         },
         _criar_projeto,
+    )
+
+    # --- Exportar peça 3D para .obj (impressão 3D / software 3D) ---
+    def _exportar_modelo(peca: str = "", forma: str = "", tamanho=None,
+                         segmentos=None, nome: str = "") -> dict:
+        plano = holo_mod.plan_model(peca or None, forma or None, None, tamanho, segmentos)
+        base = (nome or plano["forma"]).strip().replace("/", "-") or "peca"
+        destino = WORKSPACE_DIR / f"{base}.obj"
+        mesh_mod.exportar_obj(plano["forma"], destino, plano["escala"], plano["segmentos"])
+        rel = destino.relative_to(WORKSPACE_DIR)
+        _painel("💾 Modelo exportado",
+                f"Peça: {plano['forma']}\nFicheiro: workspace/{rel}\n"
+                f"Abre num software 3D ou fatiador de impressão 3D.")
+        return {"ok": True, "ficheiro": f"workspace/{rel}", "forma": plano["forma"]}
+
+    reg.register(
+        "exportar_modelo",
+        "Exporta uma peça do Holo-Lab para um ficheiro .obj (formato 3D aberto, "
+        "para software 3D ou impressão 3D). Guarda na área de trabalho.",
+        {
+            "type": "object",
+            "properties": {
+                "peca": {"type": "string", "description": "Peça, ex: 'reator', 'capacete'"},
+                "forma": {"type": "string"},
+                "tamanho": {"type": "number"},
+                "segmentos": {"type": "number", "description": "Detalhe (opcional)"},
+                "nome": {"type": "string", "description": "Nome do ficheiro (opcional)"},
+            },
+            "required": ["peca"],
+        },
+        _exportar_modelo,
+    )
+
+    # --- Agendar verificações de segurança automáticas ---
+    def _agendar_verificacao(horas: float = 24) -> dict:
+        estado = get_scheduler().iniciar(float(horas))
+        if estado["ativo"]:
+            _painel("⏰ Verificação de segurança agendada",
+                    f"O Jarvis vai verificar ameaças a cada {estado['intervalo_horas']:g} h.")
+        else:
+            _painel("⏰ Agendamento desligado", "As verificações automáticas foram paradas.")
+        return estado
+
+    reg.register(
+        "agendar_verificacao",
+        "Agenda verificações de segurança automáticas de X em X horas (0 desliga).",
+        {
+            "type": "object",
+            "properties": {"horas": {"type": "number", "description": "Intervalo em horas (0 = desligar)"}},
+            "required": ["horas"],
+        },
+        _agendar_verificacao,
+    )
+    reg.register(
+        "estado_seguranca",
+        "Mostra o estado do agendamento e o resultado da última verificação automática.",
+        {"type": "object", "properties": {}},
+        lambda: get_scheduler().estado(),
     )
 
     return reg

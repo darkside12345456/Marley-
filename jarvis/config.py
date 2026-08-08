@@ -51,6 +51,8 @@ class Config:
     # --- Segurança ---
     # Comandos do sistema estão desativados por omissão. Ativar com cuidado.
     allow_shell: bool = os.getenv("JARVIS_ALLOW_SHELL", "0") == "1"
+    # Verificação automática de ameaças de X em X horas (0 = desligado).
+    security_interval: float = float(os.getenv("JARVIS_SECURITY_INTERVAL", "0"))
 
     # --- Memória ---
     db_path: Path = field(default_factory=lambda: DATA_DIR / "jarvis.db")
@@ -73,7 +75,9 @@ class Config:
             "python, flask, node) na área de trabalho; 'verificar_ameacas' e as "
             "ferramentas 'analisar_*' fazem uma verificação de cibersegurança ao "
             "computador (defensiva, só de leitura — nunca sugiras apagar ficheiros "
-            "sem o utilizador confirmar, pois podem ser legítimos). Depois de agires, "
+            "sem o utilizador confirmar, pois podem ser legítimos); 'exportar_modelo' "
+            "grava uma peça em .obj para impressão 3D; 'agendar_verificacao' liga "
+            "verificações de segurança automáticas de X em X horas. Depois de agires, "
             "confirma em poucas palavras o que fizeste. "
             "Respostas curtas e conversacionais quando falas por voz; mais "
             "detalhadas quando o assunto o justifica."

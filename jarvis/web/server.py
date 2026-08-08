@@ -17,6 +17,7 @@ except ImportError as exc:  # pragma: no cover
 
 from ..assistant import Assistant
 from ..config import WORKSPACE_DIR, config
+from ..scheduler import get_scheduler
 
 STATIC = Path(__file__).parent / "static"
 
@@ -24,6 +25,10 @@ STATIC = Path(__file__).parent / "static"
 def create_app(assistant: Assistant | None = None) -> Flask:
     assistant = assistant or Assistant(config)
     app = Flask(__name__, static_folder=None)
+
+    # Arranca a verificação de segurança automática, se configurada.
+    if config.security_interval and config.security_interval > 0:
+        get_scheduler().iniciar(config.security_interval)
 
     @app.route("/")
     def index():
@@ -76,6 +81,10 @@ def create_app(assistant: Assistant | None = None) -> Flask:
     def reset():
         assistant.reset()
         return jsonify({"ok": True})
+
+    @app.route("/api/security/last")
+    def security_last():
+        return jsonify(get_scheduler().estado())
 
     return app
 
