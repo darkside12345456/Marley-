@@ -109,15 +109,23 @@ def create_app(assistant: Assistant | None = None) -> Flask:
     @app.route("/api/scene/save", methods=["POST"])
     def scene_save():
         data = request.get_json(force=True) or {}
-        return jsonify(get_store().guardar(data.get("nome", ""), data.get("partes")))
+        return jsonify(get_store().guardar(
+            data.get("nome", ""), data.get("partes"), data.get("thumb")))
 
     @app.route("/api/scene/list")
     def scene_list():
-        return jsonify({"projetos": get_store().listar()})
+        return jsonify({"projetos": get_store().listar_detalhado()})
 
     @app.route("/api/scene/load")
     def scene_load():
         return jsonify(get_store().carregar(request.args.get("nome", "")))
+
+    @app.route("/api/scene/thumb/<nome>")
+    def scene_thumb(nome):
+        caminho = get_store().caminho_thumb(nome)
+        if not caminho:
+            return ("Sem miniatura", 404)
+        return send_from_directory(caminho.parent, caminho.name)
 
     return app
 

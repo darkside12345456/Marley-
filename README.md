@@ -51,6 +51,15 @@ ollama serve              # normalmente já corre em segundo plano
 pip install -r requirements.txt
 ```
 
+Ou instala como pacote (fica com o comando `jarvis` disponível em qualquer lado):
+
+```bash
+pip install .              # básico
+pip install ".[completo]"  # com voz no terminal + análise de segurança completa
+```
+
+Depois é só correr `jarvis` no terminal.
+
 ### 3. (Opcional) Configurar
 
 ```bash
@@ -120,11 +129,13 @@ zoom** (funciona também por toque no telemóvel).
 
 **Editor visual:** carrega em **✏️ Editor**, escolhe uma peça e usa **＋** para a
 adicionar; depois **arrasta as peças com o rato** para as posicionar e monta
-cenas (ex: um robô). **🗑** remove a peça selecionada.
+cenas (ex: um robô). Seleciona uma peça e usa o **seletor de cor** para a pintar,
+**⧉** para a duplicar e **🗑** para a remover.
 
-**Guardar/carregar projetos:** **💾** guarda a cena com um nome e **📂** carrega-a
-noutra sessão. Também por voz: *"guarda o projeto como reator-v2"*,
-*"carrega o projeto reator-v2"*.
+**Guardar/carregar projetos:** **💾** guarda a cena com um nome (e uma
+**miniatura**) e **📂** abre uma **galeria** dos teus projetos para escolheres.
+Também por voz: *"guarda o projeto como reator-v2"*, *"carrega o projeto
+reator-v2"*.
 
 **Exportar para impressão 3D:** botão **⬇ .obj** ou *"exporta o reator para .obj"*.
 Todas as peças são geradas como **sólidos fechados (watertight)** — malhas
@@ -187,7 +198,26 @@ Só o faz se compreenderes o risco de deixar o assistente executar comandos.
 | `JARVIS_HTTP_PORT` | `5000` | Porta do HUD web |
 | `JARVIS_LANGUAGE` | `pt-PT` | Idioma da voz |
 | `JARVIS_ALLOW_SHELL` | `0` | Permitir comandos do sistema |
+| `JARVIS_SECURITY_INTERVAL` | `0` | Verificação de segurança automática (horas) |
 | `JARVIS_MAX_HISTORY` | `20` | Mensagens de contexto guardadas |
+
+---
+
+## 🖥️ App de ambiente de trabalho
+
+Podes empacotar o Jarvis num executável único (sem precisar de ter o Python
+instalado para o usar), com o [PyInstaller](https://pyinstaller.org):
+
+```bash
+# Linux / macOS
+./scripts/build_app.sh
+
+# Windows
+scripts\build_app.bat
+```
+
+A app fica em `dist/Jarvis` (`dist/Jarvis.exe` no Windows) — faz duplo-clique e o
+HUD abre no browser. (O Ollama continua a ser preciso para o "cérebro".)
 
 ---
 

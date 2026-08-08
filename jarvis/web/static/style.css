@@ -176,6 +176,29 @@ button:hover { border-color: var(--cyan); box-shadow: var(--glow); }
 #holoClose { padding: 10px 20px; border-radius: 20px; }
 .holo-controls button { padding: 9px 14px; border-radius: 18px; font-size: 14px; }
 #holoEdit.ativo { background: rgba(255, 210, 77, 0.25); border-color: #ffd24d; color: #ffd24d; box-shadow: 0 0 16px rgba(255,210,77,.5); }
+#holoColor { width: 42px; height: 40px; padding: 2px; border-radius: 10px; background: rgba(10,26,47,.7); border: 1px solid var(--cyan-dim); cursor: pointer; }
+
+/* Galeria de projetos */
+.holo-gallery {
+  position: absolute; inset: 8% 6%; z-index: 6;
+  background: rgba(3, 16, 30, 0.96); border: 1px solid var(--cyan);
+  border-radius: 14px; padding: 16px; display: flex; flex-direction: column;
+  box-shadow: 0 0 40px rgba(53,230,255,.25);
+}
+.holo-gallery.hidden { display: none; }
+.gallery-head { display: flex; justify-content: space-between; align-items: center;
+  font-size: 15px; letter-spacing: 3px; margin-bottom: 12px; text-shadow: var(--glow); }
+.gallery-head button { padding: 6px 12px; border-radius: 50%; }
+.gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px; overflow-y: auto; }
+.gallery-card { cursor: pointer; text-align: center; border: 1px solid var(--cyan-dim);
+  border-radius: 10px; padding: 8px; transition: all .2s; }
+.gallery-card:hover { border-color: var(--cyan); box-shadow: var(--glow); transform: translateY(-2px); }
+.gallery-card img, .gallery-card .no-thumb { width: 100%; aspect-ratio: 1; border-radius: 8px;
+  background: #030a14; object-fit: cover; display: grid; place-items: center;
+  color: var(--cyan-dim); font-size: 22px; letter-spacing: 2px; }
+.gallery-card span { display: block; margin-top: 6px; font-size: 12px; color: #cdefff;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Cartão de link no transcript */
 .msg.link { border-color: var(--cyan); text-decoration: none; display: block; }

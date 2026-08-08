@@ -19,6 +19,21 @@ def test_scene_store_guardar_carregar():
     assert "teste_cena_unit" in store.listar()
 
 
+_PNG_1x1 = ("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1"
+            "HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
+
+
+def test_scene_store_guarda_miniatura():
+    store = SceneStore()
+    res = store.guardar("teste_thumb_unit", [{"forma": "esfera", "pos": [0, 0, 0]}],
+                        thumb=_PNG_1x1)
+    assert res["ok"] and res["thumb"] is True
+    caminho = store.caminho_thumb("teste_thumb_unit")
+    assert caminho is not None and caminho.is_file()
+    detalhado = {d["nome"]: d["thumb"] for d in store.listar_detalhado()}
+    assert detalhado.get("teste_thumb_unit") is True
+
+
 def test_scene_store_guardar_vazio():
     store = SceneStore()
     assert "erro" in store.guardar("vazio", [])

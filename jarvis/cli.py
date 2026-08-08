@@ -116,9 +116,15 @@ def main(argv: list[str] | None = None) -> None:
         run_text()
     else:
         # Pergunta única
+        from .brain import OllamaError
+
         assistant = Assistant(config)
-        print(assistant.ask(" ".join(argv)))
-        assistant.close()
+        try:
+            print(assistant.ask(" ".join(argv)))
+        except OllamaError as exc:
+            print(f"⚠️  {exc}")
+        finally:
+            assistant.close()
 
 
 if __name__ == "__main__":

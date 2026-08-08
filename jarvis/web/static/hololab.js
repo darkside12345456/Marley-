@@ -144,7 +144,7 @@
   // instancias: [{v, e, cor, escala, pos:[x,y,z]}]
   let instancias = [], ang = 0, tilt = 0.5, running = false;
   let zoomFactor = 1, autoRotate = true, dragging = false, px = 0, py = 0;
-  let editor = false, selectedIndex = -1, moving = false;
+  let editor = false, selectedIndex = -1, moving = false, corAtual = "#35e6ff";
 
   function projeta(p, cx, cy, zoom) {
     let [x, y, z] = p;
@@ -262,10 +262,18 @@
   function addPiece(forma) {
     const f = NOMES[forma] ? forma : "reator";
     const pos = [(Math.random() - 0.5) * 1.6, 0, (Math.random() - 0.5) * 1.6];
-    instancias.push(_inst(f, "#35e6ff", 1, 0, pos));
+    instancias.push(_inst(f, corAtual, 1, 0, pos));
     selectedIndex = instancias.length - 1;
     title.textContent = "EDITOR (" + instancias.length + " peças)";
     abrir();
+    syncScene();
+  }
+  function duplicateSelected() {
+    if (selectedIndex < 0) return;
+    const s = instancias[selectedIndex];
+    const pos = [clamp(s.pos[0] + 0.5), s.pos[1], clamp(s.pos[2] + 0.5)];
+    instancias.push(_inst(s.forma, s.cor, s.escala, s.seg, pos));
+    selectedIndex = instancias.length - 1;
     syncScene();
   }
   function removeSelected() {
@@ -273,6 +281,13 @@
     instancias.splice(selectedIndex, 1);
     selectedIndex = -1;
     syncScene();
+  }
+  function setColor(hex) {
+    corAtual = hex;
+    if (editor && selectedIndex >= 0) {
+      instancias[selectedIndex].cor = hex;
+      syncScene();
+    }
   }
 
   // ---- Exportar para .obj ----
@@ -310,24 +325,50 @@
     URL.revokeObjectURL(a.href);
   }
 
-  // ---- Guardar / carregar projetos ----
+  // ---- Guardar / carregar projetos (com miniaturas) ----
+  function miniatura() {
+    // reduz o canvas atual a uma miniatura 200x200 (dataURL PNG)
+    try {
+      const off = document.createElement("canvas");
+      off.width = 200; off.height = 200;
+      off.getContext("2d").drawImage(canvas, 0, 0, 200, 200);
+      return off.toDataURL("image/png");
+    } catch { return null; }
+  }
   async function guardar() {
+    if (!instancias.length) { alert("Nada para guardar."); return; }
     const nome = prompt("Nome do projeto 3D:");
     if (!nome) return;
     await fetch("/api/scene/save", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, partes: serialize() }),
+      body: JSON.stringify({ nome, partes: serialize(), thumb: miniatura() }),
     });
     title.textContent = "GUARDADO: " + nome.toUpperCase();
   }
   async function carregar() {
-    const r = await fetch("/api/scene/list");
-    const { projetos } = await r.json();
+    const grid = document.getElementById("galleryGrid");
+    const gallery = document.getElementById("holoGallery");
+    const { projetos } = await (await fetch("/api/scene/list")).json();
     if (!projetos || !projetos.length) { alert("Ainda não há projetos guardados."); return; }
-    const nome = prompt("Carregar qual?\n" + projetos.join(", "), projetos[0]);
-    if (!nome) return;
-    const res = await (await fetch("/api/scene/load?nome=" + encodeURIComponent(nome))).json();
-    if (res.ok) showScene(res.partes); else alert(res.erro || "Não encontrado.");
+    grid.innerHTML = "";
+    for (const p of projetos) {
+      const card = document.createElement("div");
+      card.className = "gallery-card";
+      const img = document.createElement(p.thumb ? "img" : "div");
+      if (p.thumb) img.src = "/api/scene/thumb/" + encodeURIComponent(p.nome);
+      else { img.className = "no-thumb"; img.textContent = "3D"; }
+      const lbl = document.createElement("span");
+      lbl.textContent = p.nome;
+      card.appendChild(img);
+      card.appendChild(lbl);
+      card.addEventListener("click", async () => {
+        const res = await (await fetch("/api/scene/load?nome=" + encodeURIComponent(p.nome))).json();
+        gallery.classList.add("hidden");
+        if (res.ok) showScene(res.partes); else alert(res.erro || "Erro.");
+      });
+      grid.appendChild(card);
+    }
+    gallery.classList.remove("hidden");
   }
 
   window.HoloLab = { show, showScene, hide };
@@ -337,9 +378,13 @@
   on("holoClose", hide);
   on("holoExport", exportOBJ);
   on("holoAdd", () => addPiece(sel ? sel.value : "reator"));
+  on("holoDup", duplicateSelected);
   on("holoRemove", removeSelected);
   on("holoSave", guardar);
   on("holoLoad", carregar);
+  on("galleryClose", () => document.getElementById("holoGallery").classList.add("hidden"));
+  const corInput = document.getElementById("holoColor");
+  if (corInput) corInput.addEventListener("input", () => setColor(corInput.value));
   on("holoEdit", () => {
     editor = !editor;
     const b = document.getElementById("holoEdit");
@@ -369,7 +414,13 @@
         const d = Math.hypot(s[0] - c.x, s[1] - c.y);
         if (d < bd) { bd = d; best = i; }
       });
-      if (best >= 0) { selectedIndex = best; moving = true; return; }
+      if (best >= 0) {
+        selectedIndex = best; moving = true;
+        const ci = document.getElementById("holoColor");
+        if (ci) ci.value = instancias[best].cor;
+        corAtual = instancias[best].cor;
+        return;
+      }
       selectedIndex = -1;
     }
     dragging = true;
