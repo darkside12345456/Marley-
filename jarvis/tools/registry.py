@@ -12,6 +12,8 @@ from . import system as system_mod
 from . import basics as basics_mod
 from . import browser as browser_mod
 from . import holo as holo_mod
+from . import projects as projects_mod
+from .. import security as security_mod
 
 
 @dataclass
@@ -189,8 +191,10 @@ def build_default_registry(memory=None, allow_shell: bool = False, actions=None)
             _abrir_pagina,
         )
 
-        def _construir_modelo(peca: str = "", forma: str = "", cor: str = "") -> str:
-            plano = holo_mod.plan_model(peca or None, forma or None, cor or None)
+        def _construir_modelo(peca: str = "", forma: str = "", cor: str = "",
+                              tamanho=None, segmentos=None) -> str:
+            plano = holo_mod.plan_model(peca or None, forma or None, cor or None,
+                                        tamanho, segmentos)
             actions.add("modelo", **plano)
             return f"A projetar '{plano['peca']}' no Holo-Lab (forma: {plano['forma']})."
 
@@ -198,17 +202,126 @@ def build_default_registry(memory=None, allow_shell: bool = False, actions=None)
             "construir_modelo",
             "Projeta e mostra um modelo 3D holográfico no Holo-Lab (estilo desenho "
             "do fato do filme). Usa para 'constrói', 'mostra em 3D', 'desenha a peça'. "
-            "Formas: reator, capacete, manopla, esfera, toroide, cilindro, estrutura.",
+            "Formas: reator, capacete, manopla, esfera, toroide, cilindro, estrutura. "
+            "'tamanho' escala a peça (0.2 a 3) e 'segmentos' aumenta o detalhe.",
             {
                 "type": "object",
                 "properties": {
-                    "peca": {"type": "string", "description": "Peça a construir, ex: 'reator', 'capacete', 'manopla'"},
+                    "peca": {"type": "string", "description": "Peça a construir, ex: 'reator', 'capacete'"},
                     "forma": {"type": "string", "description": "Forma geométrica (opcional)"},
                     "cor": {"type": "string", "description": "Cor em hex, ex: '#35e6ff' (opcional)"},
+                    "tamanho": {"type": "number", "description": "Escala 0.2–3 (opcional)"},
+                    "segmentos": {"type": "number", "description": "Detalhe 6–48 (opcional)"},
                 },
                 "required": ["peca"],
             },
             _construir_modelo,
         )
+
+        def _construir_cena(partes) -> str:
+            plano = holo_mod.plan_scene(partes)
+            if "erro" in plano:
+                return plano["erro"]
+            actions.add("cena", partes=plano["partes"])
+            return f"A montar uma cena com {len(plano['partes'])} peça(s) no Holo-Lab."
+
+        reg.register(
+            "construir_cena",
+            "Monta uma cena 3D composta por várias peças posicionadas (ex: montar "
+            "um robô ou uma estrutura a partir de vários blocos). Cada parte tem "
+            "'forma' e opcionalmente 'cor', 'tamanho' e 'pos' [x,y,z].",
+            {
+                "type": "object",
+                "properties": {
+                    "partes": {
+                        "type": "array",
+                        "description": "Lista de peças, cada uma {forma, cor?, tamanho?, pos?}",
+                        "items": {"type": "object"},
+                    }
+                },
+                "required": ["partes"],
+            },
+            _construir_cena,
+        )
+
+    # --- Cibersegurança (defensivo, só de leitura) ---
+    def _painel(titulo: str, texto: str) -> None:
+        if actions is not None:
+            actions.add("painel", titulo=titulo, texto=texto)
+
+    def _verificar_ameacas() -> dict:
+        rel = security_mod.verificar_ameacas()
+        _painel(f"🛡️ Segurança — risco {rel['nivel']}", rel["relatorio"])
+        return rel
+
+    reg.register(
+        "verificar_ameacas",
+        "Faz uma verificação de segurança ao computador (processos, rede e itens de "
+        "arranque) e devolve um relatório de risco. Só de leitura — nunca apaga nada.",
+        {"type": "object", "properties": {}},
+        _verificar_ameacas,
+    )
+    reg.register(
+        "analisar_processos",
+        "Lista processos em execução e assinala indícios suspeitos.",
+        {"type": "object", "properties": {}},
+        security_mod.analisar_processos,
+    )
+    reg.register(
+        "analisar_rede",
+        "Lista portas à escuta e ligações de rede ativas, assinalando as de risco.",
+        {"type": "object", "properties": {}},
+        security_mod.analisar_rede,
+    )
+    reg.register(
+        "analisar_ficheiros",
+        "Procura ficheiros com características de risco numa pasta (só de leitura).",
+        {
+            "type": "object",
+            "properties": {"caminho": {"type": "string", "description": "Pasta a analisar"}},
+            "required": ["caminho"],
+        },
+        security_mod.analisar_ficheiros,
+    )
+    reg.register(
+        "calcular_hash",
+        "Calcula o SHA-256 de um ficheiro (para verificação manual, ex: VirusTotal).",
+        {
+            "type": "object",
+            "properties": {"caminho": {"type": "string"}},
+            "required": ["caminho"],
+        },
+        security_mod.calcular_hash,
+    )
+
+    # --- Criação de aplicações (isolada na sandbox 'workspace/') ---
+    def _criar_projeto(nome: str, tipo: str = "web", descricao: str = "") -> dict:
+        resultado = projects_mod.criar_projeto(nome, tipo, descricao)
+        if resultado.get("ok"):
+            _painel(
+                f"🧩 App criada: {nome}",
+                f"Tipo: {resultado['tipo']}\nPasta: workspace/{resultado['pasta']}\n"
+                f"Ficheiros: {', '.join(resultado['ficheiros'])}",
+            )
+            if actions is not None and resultado.get("abrir_url"):
+                actions.add("abrir_pagina", url=resultado["abrir_url"], titulo=f"App: {nome}")
+        return resultado
+
+    reg.register(
+        "criar_projeto",
+        "Cria uma aplicação/projeto a partir de um modelo, dentro da área de "
+        "trabalho segura. Tipos: web, python, flask, node. As apps 'web' abrem "
+        "automaticamente no browser.",
+        {
+            "type": "object",
+            "properties": {
+                "nome": {"type": "string"},
+                "tipo": {"type": "string", "description": "web, python, flask ou node"},
+                "descricao": {"type": "string"},
+            },
+            "required": ["nome"],
+        },
+        _criar_projeto,
+    )
 
     return reg

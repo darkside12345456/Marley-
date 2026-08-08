@@ -1,0 +1,3 @@
+# Dependência OPCIONAL para o verificador de ameaças analisar processos e rede.
+# Sem ela, o Jarvis ainda faz uma análise reduzida (só de leitura).
+psutil>=5.9

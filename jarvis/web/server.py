@@ -16,7 +16,7 @@ except ImportError as exc:  # pragma: no cover
     ) from exc
 
 from ..assistant import Assistant
-from ..config import config
+from ..config import WORKSPACE_DIR, config
 
 STATIC = Path(__file__).parent / "static"
 
@@ -32,6 +32,15 @@ def create_app(assistant: Assistant | None = None) -> Flask:
     @app.route("/static/<path:name>")
     def static_files(name):
         return send_from_directory(STATIC, name)
+
+    @app.route("/workspace/<path:name>")
+    def workspace_files(name):
+        # Serve as apps criadas pelo Jarvis. Restrito à sandbox workspace/.
+        base = WORKSPACE_DIR.resolve()
+        alvo = (base / name).resolve()
+        if not str(alvo).startswith(str(base)) or not alvo.is_file():
+            return ("Não encontrado", 404)
+        return send_from_directory(base, str(alvo.relative_to(base)))
 
     @app.route("/api/status")
     def status():

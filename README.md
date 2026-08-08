@@ -21,8 +21,13 @@ holográfico** ao estilo do filme e a correr **localmente e gratuito** com o
 - **Ferramentas** — meteorologia, pesquisa na web, ler/escrever ficheiros,
   hora, e comandos do sistema (desligados por segurança até tu permitires).
 - **Age por ti** — abre páginas e pesquisas no ecrã quando pedires.
-- **Holo-Lab 3D** — "constrói" e mostra peças em wireframe holográfico a rodar
-  (reator, capacete, manopla, estruturas), estilo desenho do fato no filme.
+- **Holo-Lab 3D paramétrico** — "constrói" o que pedires em wireframe holográfico
+  (peças com tamanho/cor à escolha e cenas com várias peças), estilo desenho do
+  fato no filme.
+- **Cria aplicações** — gera projetos (web, python, flask, node) na sandbox e
+  abre as apps web no browser.
+- **Cibersegurança** — verifica ameaças no PC (processos, rede, arranque). É
+  **defensivo e só de leitura**: deteta e avisa, nunca apaga nada.
 - **HUD holográfico** — orbe/reator animado, ondas de voz e transcrição.
 
 ---
@@ -91,7 +96,9 @@ python -m jarvis voz
 | `listar_ficheiros` / `ler_ficheiro` / `escrever_ficheiro` | Ficheiros na pasta `workspace/` |
 | `memorizar` / `recordar` | Guarda e recupera factos sobre ti |
 | `abrir_pagina` | Abre um site ou pesquisa no ecrã |
-| `construir_modelo` | Projeta uma peça 3D no Holo-Lab |
+| `construir_modelo` / `construir_cena` | Projeta peças 3D no Holo-Lab (com tamanho/cor/composição) |
+| `criar_projeto` | Cria uma aplicação (web, python, flask, node) na sandbox |
+| `verificar_ameacas` / `analisar_processos` / `analisar_rede` / `analisar_ficheiros` / `calcular_hash` | Cibersegurança (só de leitura) |
 | `executar_comando` | Comandos do sistema — **desligado por omissão** |
 
 ### 🔬 Holo-Lab (peças 3D estilo filme)
@@ -106,6 +113,32 @@ manopla, núcleo, anel, motor, estrutura).
 
 > Nota: isto é **visualização 3D**, não fabrico físico — software desenha e
 > mostra, não constrói o objeto real.
+
+### 🧩 Criar aplicações
+
+> "Cria-me uma app web chamada Agenda" · "Faz um projeto flask chamado api"
+
+O Jarvis gera a estrutura do projeto dentro de `workspace/` (isolado do resto do
+PC). Tipos: **web, python, flask, node**. As apps **web** abrem logo no browser.
+
+### 🛡️ Cibersegurança (verificar ameaças)
+
+> "Verifica se há ameaças no meu PC" · botão **🛡️** no HUD
+
+Faz uma verificação **defensiva e só de leitura** e mostra um relatório de risco
+(processos, rede e itens de arranque). Princípios:
+
+- **Nunca apaga nem altera nada** — só deteta e aconselha (evita estragos por
+  falsos positivos).
+- **Privacidade** — não envia dados para lado nenhum. Os hashes SHA-256 são
+  mostrados para tu verificares (ex: em [virustotal.com](https://virustotal.com)).
+- **Indicativo** — não substitui um antivírus dedicado.
+
+Para análise completa de processos e rede, instala o `psutil` (opcional):
+
+```bash
+pip install -r requirements-seg.txt
+```
 
 ### ⚠️ Comandos do sistema
 

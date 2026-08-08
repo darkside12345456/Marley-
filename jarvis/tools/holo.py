@@ -20,20 +20,59 @@ PECA_FORMA = {
 }
 
 
-def plan_model(peca: str | None = None, forma: str | None = None, cor: str | None = None) -> dict:
-    """Devolve {peca, forma, cor} pronto a enviar ao HUD."""
+def _num(valor, minimo, maximo, omissao):
+    try:
+        v = float(valor)
+    except (TypeError, ValueError):
+        return omissao
+    return max(minimo, min(maximo, v))
+
+
+def _resolver_forma(peca: str | None, forma: str | None) -> str:
     p = (peca or "").lower().strip()
     f = (forma or "").lower().strip()
+    if f in FORMAS:
+        return f
+    if p in PECA_FORMA:
+        return PECA_FORMA[p]
+    for chave, valor in PECA_FORMA.items():
+        if chave in p:
+            return valor
+    return "reator"
 
-    if f not in FORMAS:
-        f = PECA_FORMA.get(p, "")
-    if not f:
-        # tenta encontrar uma palavra-chave dentro do texto da peça
-        for chave, valor in PECA_FORMA.items():
-            if chave in p:
-                f = valor
-                break
-    if f not in FORMAS:
-        f = "reator"
 
-    return {"peca": peca or f, "forma": f, "cor": cor or "#35e6ff"}
+def plan_model(peca=None, forma=None, cor=None, tamanho=None, segmentos=None) -> dict:
+    """Planeia um modelo 3D paramétrico -> {peca, forma, cor, escala, segmentos}."""
+    f = _resolver_forma(peca, forma)
+    return {
+        "peca": peca or f,
+        "forma": f,
+        "cor": cor or "#35e6ff",
+        "escala": _num(tamanho, 0.2, 3.0, 1.0),
+        "segmentos": int(_num(segmentos, 6, 48, 0)),  # 0 = usar valor por defeito
+    }
+
+
+def plan_scene(partes) -> dict:
+    """Planeia uma cena composta por várias peças posicionadas no espaço.
+
+    `partes` é uma lista de dicionários, cada um com forma/peca e, opcionalmente,
+    cor, tamanho, segmentos e pos ([x, y, z]).
+    """
+    if not isinstance(partes, list):
+        return {"erro": "partes deve ser uma lista"}
+    out = []
+    for parte in partes[:12]:
+        if not isinstance(parte, dict):
+            continue
+        m = plan_model(
+            parte.get("peca"), parte.get("forma"), parte.get("cor"),
+            parte.get("tamanho"), parte.get("segmentos"),
+        )
+        pos = parte.get("pos") or [0, 0, 0]
+        try:
+            m["pos"] = [_num(pos[0], -3, 3, 0), _num(pos[1], -3, 3, 0), _num(pos[2], -3, 3, 0)]
+        except (TypeError, IndexError):
+            m["pos"] = [0, 0, 0]
+        out.append(m)
+    return {"partes": out}

@@ -151,14 +151,31 @@
     transcript.scrollTop = transcript.scrollHeight;
   }
 
+  function addPanel(titulo, texto) {
+    const el = document.createElement("div");
+    el.className = "msg bot panel";
+    const h = document.createElement("div");
+    h.className = "panel-title";
+    h.textContent = titulo;
+    const pre = document.createElement("pre");
+    pre.textContent = texto;
+    el.appendChild(h);
+    el.appendChild(pre);
+    transcript.appendChild(el);
+    transcript.scrollTop = transcript.scrollHeight;
+  }
+
   function executeActions(acoes) {
     for (const acao of acoes) {
       if (acao.tipo === "abrir_pagina") {
         const win = window.open(acao.url, "_blank", "noopener");
-        // se o browser bloquear o popup, deixa um link clicável
-        if (!win) addLink(acao.titulo || acao.url, acao.url);
+        if (!win) addLink(acao.titulo || acao.url, acao.url); // popup bloqueado
       } else if (acao.tipo === "modelo") {
-        if (window.HoloLab) window.HoloLab.show(acao.forma, acao.peca, acao.cor);
+        if (window.HoloLab) window.HoloLab.show(acao.forma, acao.peca, acao.cor, acao.escala, acao.segmentos);
+      } else if (acao.tipo === "cena") {
+        if (window.HoloLab) window.HoloLab.showScene(acao.partes);
+      } else if (acao.tipo === "painel") {
+        addPanel(acao.titulo || "Relatório", acao.texto || "");
       }
     }
   }
@@ -210,6 +227,9 @@
   if (labBtn) labBtn.addEventListener("click", () => {
     if (window.HoloLab) window.HoloLab.show("reator", null, "#35e6ff");
   });
+  const shieldBtn = document.getElementById("shieldBtn");
+  if (shieldBtn) shieldBtn.addEventListener("click", () =>
+    send("Faz uma verificação de segurança ao meu computador."));
   resetBtn.addEventListener("click", async () => {
     await fetch("/api/reset", { method: "POST" });
     transcript.innerHTML = "";
