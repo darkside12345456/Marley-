@@ -123,11 +123,57 @@
       const txt = e.results[0][0].transcript;
       send(txt);
     };
-    recognition.onend = () => { listening = false; micBtn.classList.remove("listening"); if (state === "listening") setState("idle"); };
-    recognition.onerror = () => { listening = false; micBtn.classList.remove("listening"); setState("idle"); };
+    recognition.onend = () => {
+      listening = false; micBtn.classList.remove("listening");
+      if (state === "listening") setState("idle");
+      if (wakeActive && wakeRec) { try { wakeRec.start(); } catch { /* já a correr */ } }
+    };
+    recognition.onerror = () => {
+      listening = false; micBtn.classList.remove("listening"); setState("idle");
+      if (wakeActive && wakeRec) { try { wakeRec.start(); } catch { /* já a correr */ } }
+    };
   } else {
     micBtn.title = "Reconhecimento de voz não suportado neste browser";
   }
+
+  // ---- Palavra de ativação ("Jarvis…") ----
+  let wakeActive = false, wakeRec = null;
+  function startCommand() {
+    if (!recognition || listening) return;
+    synth && synth.cancel();
+    listening = true;
+    micBtn.classList.add("listening");
+    setState("listening");
+    try { recognition.start(); } catch { /* ignora */ }
+  }
+  if (SR) {
+    wakeRec = new SR();
+    wakeRec.lang = "pt-PT";
+    wakeRec.continuous = true;
+    wakeRec.interimResults = true;
+    wakeRec.onresult = (e) => {
+      let t = "";
+      for (const r of e.results) t += r[0].transcript + " ";
+      if (/jarvis/i.test(t) && !listening) {
+        try { wakeRec.stop(); } catch { /* ignora */ }
+        startCommand();
+      }
+    };
+    wakeRec.onend = () => { if (wakeActive && !listening) { try { wakeRec.start(); } catch { /* ignora */ } } };
+    wakeRec.onerror = () => {};
+  }
+  const wakeBtn = document.getElementById("wakeBtn");
+  if (wakeBtn) wakeBtn.addEventListener("click", () => {
+    if (!wakeRec) { alert("Este browser não suporta reconhecimento de voz."); return; }
+    wakeActive = !wakeActive;
+    wakeBtn.classList.toggle("listening", wakeActive);
+    if (wakeActive) {
+      try { wakeRec.start(); } catch { /* ignora */ }
+      addMsg('Palavra de ativação ligada. Diz "Jarvis" e depois o teu pedido.', "bot");
+    } else {
+      try { wakeRec.stop(); } catch { /* ignora */ }
+    }
+  });
 
   micBtn.addEventListener("click", () => {
     if (!recognition) { alert("Este browser não suporta reconhecimento de voz. Usa o Chrome/Edge, ou escreve."); return; }

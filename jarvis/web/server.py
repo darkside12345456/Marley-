@@ -18,6 +18,8 @@ except ImportError as exc:  # pragma: no cover
 from ..assistant import Assistant
 from ..config import WORKSPACE_DIR, config
 from ..scheduler import get_scheduler
+from ..scenes import get_store
+from .. import mesh as mesh_mod
 
 STATIC = Path(__file__).parent / "static"
 
@@ -85,6 +87,37 @@ def create_app(assistant: Assistant | None = None) -> Flask:
     @app.route("/api/security/last")
     def security_last():
         return jsonify(get_scheduler().estado())
+
+    # --- Exportar um sólido fechado para .obj ---
+    @app.route("/api/export/<forma>")
+    def export_obj(forma):
+        escala = float(request.args.get("escala", 1) or 1)
+        segmentos = int(float(request.args.get("segmentos", 0) or 0))
+        obj = mesh_mod.gerar_obj(forma, escala, segmentos)
+        return Response(
+            obj, mimetype="text/plain",
+            headers={"Content-Disposition": f'attachment; filename="{forma}.obj"'},
+        )
+
+    # --- Projetos 3D (guardar / carregar entre sessões) ---
+    @app.route("/api/scene/current", methods=["POST"])
+    def scene_current():
+        data = request.get_json(force=True) or {}
+        get_store().definir_atual(data.get("partes", []))
+        return jsonify({"ok": True})
+
+    @app.route("/api/scene/save", methods=["POST"])
+    def scene_save():
+        data = request.get_json(force=True) or {}
+        return jsonify(get_store().guardar(data.get("nome", ""), data.get("partes")))
+
+    @app.route("/api/scene/list")
+    def scene_list():
+        return jsonify({"projetos": get_store().listar()})
+
+    @app.route("/api/scene/load")
+    def scene_load():
+        return jsonify(get_store().carregar(request.args.get("nome", "")))
 
     return app
 

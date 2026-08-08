@@ -132,6 +132,7 @@ button:hover { border-color: var(--cyan); box-shadow: var(--glow); }
 .mic.listening { background: rgba(53, 230, 255, 0.25); box-shadow: 0 0 24px var(--cyan); animation: pulse 1s infinite; }
 @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.08);} }
 .reset { width: 46px; padding: 0; height: 46px; border-radius: 50%; }
+.reset.listening { background: rgba(53, 230, 255, 0.28); box-shadow: 0 0 18px var(--cyan); animation: pulse 1.2s infinite; }
 
 /* Holo-Lab (laboratório 3D) */
 .holo-lab {
@@ -173,6 +174,8 @@ button:hover { border-color: var(--cyan); box-shadow: var(--glow); }
   outline: none;
 }
 #holoClose { padding: 10px 20px; border-radius: 20px; }
+.holo-controls button { padding: 9px 14px; border-radius: 18px; font-size: 14px; }
+#holoEdit.ativo { background: rgba(255, 210, 77, 0.25); border-color: #ffd24d; color: #ffd24d; box-shadow: 0 0 16px rgba(255,210,77,.5); }
 
 /* Cartão de link no transcript */
 .msg.link { border-color: var(--cyan); text-decoration: none; display: block; }

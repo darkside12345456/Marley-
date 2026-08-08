@@ -17,6 +17,7 @@ from .. import security as security_mod
 from .. import mesh as mesh_mod
 from ..config import WORKSPACE_DIR
 from ..scheduler import get_scheduler
+from ..scenes import get_store
 
 
 @dataclass
@@ -383,6 +384,41 @@ def build_default_registry(memory=None, allow_shell: bool = False, actions=None)
         "Mostra o estado do agendamento e o resultado da última verificação automática.",
         {"type": "object", "properties": {}},
         lambda: get_scheduler().estado(),
+    )
+
+    # --- Guardar / carregar projetos 3D do Holo-Lab ---
+    def _guardar_projeto(nome: str) -> dict:
+        res = get_store().guardar(nome)
+        if res.get("ok"):
+            _painel("💾 Projeto 3D guardado", f"'{nome}' com {res['pecas']} peça(s).")
+        return res
+
+    def _carregar_projeto(nome: str) -> dict:
+        res = get_store().carregar(nome)
+        if res.get("ok"):
+            if actions is not None:
+                actions.add("cena", partes=res["partes"])
+            _painel("📂 Projeto 3D carregado", f"'{res['nome']}' com {len(res['partes'])} peça(s).")
+        return res
+
+    reg.register(
+        "guardar_projeto",
+        "Guarda a cena atual do Holo-Lab como um projeto 3D com um nome, para "
+        "recuperar noutra sessão.",
+        {"type": "object", "properties": {"nome": {"type": "string"}}, "required": ["nome"]},
+        _guardar_projeto,
+    )
+    reg.register(
+        "carregar_projeto",
+        "Carrega um projeto 3D guardado e mostra-o no Holo-Lab.",
+        {"type": "object", "properties": {"nome": {"type": "string"}}, "required": ["nome"]},
+        _carregar_projeto,
+    )
+    reg.register(
+        "listar_projetos",
+        "Lista os projetos 3D guardados.",
+        {"type": "object", "properties": {}},
+        lambda: {"projetos": get_store().listar()},
     )
 
     return reg

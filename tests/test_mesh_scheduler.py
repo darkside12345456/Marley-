@@ -13,9 +13,17 @@ def test_gerar_obj_esfera_tem_faces():
     assert "\nf " in obj  # sólido -> tem faces
 
 
-def test_gerar_obj_reator_tem_linhas():
+def test_todas_as_pecas_sao_solidos_fechados():
+    for forma in ["esfera", "capacete", "toroide", "cilindro", "manopla",
+                  "estrutura", "reator"]:
+        v, f = mesh.construir(forma, 0)
+        assert mesh.is_watertight(v, f), f"{forma} não é watertight"
+
+
+def test_gerar_obj_reator_tem_faces():
     obj = mesh.gerar_obj("reator", 1.0)
-    assert "\nl " in obj  # reator é wireframe -> linhas
+    assert "\nf " in obj  # reator agora é um sólido fechado (faces)
+    assert "\nl " not in obj
 
 
 def test_gerar_obj_escala():

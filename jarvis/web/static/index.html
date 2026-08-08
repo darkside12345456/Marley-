@@ -27,7 +27,7 @@
     <div class="holo-lab hidden" id="holoLab">
       <div class="holo-title" id="holoTitle">REATOR ARC</div>
       <canvas id="holoCanvas" width="560" height="560"></canvas>
-      <div class="holo-hint">Arrasta para rodar · roda do rato para zoom</div>
+      <div class="holo-hint">Arrasta para rodar · roda do rato para zoom · no Editor, arrasta as peças</div>
       <div class="holo-controls">
         <select id="holoSelect">
           <option value="reator">Reator Arc</option>
@@ -38,6 +38,11 @@
           <option value="cilindro">Motor</option>
           <option value="estrutura">Estrutura</option>
         </select>
+        <button id="holoEdit" title="Modo editor: montar cenas">✏️ Editor</button>
+        <button id="holoAdd" title="Adicionar a peça selecionada acima">＋</button>
+        <button id="holoRemove" title="Remover a peça selecionada">🗑</button>
+        <button id="holoSave" title="Guardar projeto 3D">💾</button>
+        <button id="holoLoad" title="Carregar projeto 3D">📂</button>
         <button id="holoExport" title="Exportar para .obj (impressão 3D)">⬇ .obj</button>
         <button id="holoClose">Fechar</button>
       </div>
@@ -52,6 +57,7 @@
     </button>
     <input id="textInput" type="text" placeholder="Escreve ou fala com o Jarvis…" autocomplete="off" />
     <button id="sendBtn" class="send">Enviar</button>
+    <button id="wakeBtn" class="reset" title="Palavra de ativação: dizer 'Jarvis'">🎧</button>
     <button id="labBtn" class="reset" title="Abrir o Holo-Lab (3D)">🔬</button>
     <button id="shieldBtn" class="reset" title="Verificar ameaças (cibersegurança)">🛡️</button>
     <button id="resetBtn" class="reset" title="Limpar memória da conversa">⟲</button>

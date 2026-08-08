@@ -144,6 +144,7 @@
   // instancias: [{v, e, cor, escala, pos:[x,y,z]}]
   let instancias = [], ang = 0, tilt = 0.5, running = false;
   let zoomFactor = 1, autoRotate = true, dragging = false, px = 0, py = 0;
+  let editor = false, selectedIndex = -1, moving = false;
 
   function projeta(p, cx, cy, zoom) {
     let [x, y, z] = p;
@@ -191,14 +192,32 @@
         ctx.fill();
       }
     }
+    // realce da peça selecionada (modo editor)
+    if (editor && selectedIndex >= 0 && instancias[selectedIndex]) {
+      const c = projeta(instancias[selectedIndex].pos, cx, cy, zoom);
+      ctx.strokeStyle = "#ffd24d";
+      ctx.shadowColor = "#ffd24d";
+      ctx.shadowBlur = 12;
+      ctx.globalAlpha = 0.95;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(c[0], c[1], 30, 0, Math.PI * 2);
+      ctx.stroke();
+    }
     ctx.globalAlpha = 1;
     ctx.shadowBlur = 0;
     requestAnimationFrame(frame);
   }
 
+  function centroEcra(inst) {
+    const w = canvas.width, h = canvas.height;
+    return projeta(inst.pos, w / 2, h / 2, w * 0.3 * zoomFactor);
+  }
+
   function _inst(forma, cor, escala, segmentos, pos) {
     const m = construir(forma, segmentos);
-    return { v: m.v, e: m.e, cor: cor || "#35e6ff", escala: escala || 1, pos: pos || [0, 0, 0] };
+    return { v: m.v, e: m.e, forma, seg: segmentos || 0, cor: cor || "#35e6ff",
+             escala: escala || 1, pos: pos ? pos.slice() : [0, 0, 0] };
   }
 
   function abrir() {
@@ -206,70 +225,179 @@
     if (!running) { running = true; frame(); }
   }
 
+  function serialize() {
+    return instancias.map((i) => ({ forma: i.forma, cor: i.cor, escala: i.escala,
+                                    segmentos: i.seg, pos: i.pos }));
+  }
+
+  function syncScene() {
+    fetch("/api/scene/current", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ partes: serialize() }),
+    }).catch(() => {});
+  }
+
   function show(forma, peca, cor, escala, segmentos) {
     const f = NOMES[forma] ? forma : "reator";
     instancias = [_inst(f, cor, escala, segmentos, [0, 0, 0])];
+    selectedIndex = -1;
     title.textContent = (peca && String(peca).toUpperCase()) || NOMES[f] || f.toUpperCase();
     abrir();
+    syncScene();
   }
 
   function showScene(partes) {
     if (!partes || !partes.length) return;
-    instancias = partes.map((p) =>
-      _inst(p.forma, p.cor, p.escala, p.segmentos, p.pos));
+    instancias = partes.map((p) => _inst(p.forma, p.cor, p.escala, p.segmentos, p.pos));
+    selectedIndex = -1;
     title.textContent = "CENA (" + partes.length + " peças)";
     abrir();
+    syncScene();
   }
 
   function hide() { running = false; panel.classList.add("hidden"); }
 
-  // ---- Exportar o que está no ecrã para .obj (wireframe) ----
-  function exportOBJ() {
+  // ---- Editor: adicionar / remover peças ----
+  function addPiece(forma) {
+    const f = NOMES[forma] ? forma : "reator";
+    const pos = [(Math.random() - 0.5) * 1.6, 0, (Math.random() - 0.5) * 1.6];
+    instancias.push(_inst(f, "#35e6ff", 1, 0, pos));
+    selectedIndex = instancias.length - 1;
+    title.textContent = "EDITOR (" + instancias.length + " peças)";
+    abrir();
+    syncScene();
+  }
+  function removeSelected() {
+    if (selectedIndex < 0) return;
+    instancias.splice(selectedIndex, 1);
+    selectedIndex = -1;
+    syncScene();
+  }
+
+  // ---- Exportar para .obj ----
+  async function exportOBJ() {
     if (!instancias.length) return;
+    if (instancias.length === 1 && NOMES[instancias[0].forma]) {
+      // sólido fechado gerado no servidor (imprimível)
+      const i = instancias[0];
+      const url = `/api/export/${i.forma}?escala=${i.escala}&segmentos=${i.seg}`;
+      const r = await fetch(url);
+      const txt = await r.text();
+      baixar(txt, i.forma + ".obj");
+      return;
+    }
+    // cena com várias peças: exporta o wireframe combinado
     const out = ["# Exportado pelo Jarvis Holo-Lab"];
     let offset = 0;
     instancias.forEach((inst, ii) => {
       out.push("o parte" + (ii + 1));
       for (const p of inst.v) {
-        const x = p[0] * inst.escala + inst.pos[0];
-        const y = p[1] * inst.escala + inst.pos[1];
-        const z = p[2] * inst.escala + inst.pos[2];
-        out.push(`v ${x.toFixed(5)} ${y.toFixed(5)} ${z.toFixed(5)}`);
+        out.push(`v ${(p[0] * inst.escala + inst.pos[0]).toFixed(5)} ` +
+                 `${(p[1] * inst.escala + inst.pos[1]).toFixed(5)} ` +
+                 `${(p[2] * inst.escala + inst.pos[2]).toFixed(5)}`);
       }
       for (const [a, b] of inst.e) out.push(`l ${a + 1 + offset} ${b + 1 + offset}`);
       offset += inst.v.length;
     });
-    const blob = new Blob([out.join("\n") + "\n"], { type: "text/plain" });
+    baixar(out.join("\n") + "\n", "holo-lab.obj");
+  }
+  function baixar(texto, nome) {
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "holo-lab.obj";
+    a.href = URL.createObjectURL(new Blob([texto], { type: "text/plain" }));
+    a.download = nome;
     a.click();
     URL.revokeObjectURL(a.href);
   }
 
+  // ---- Guardar / carregar projetos ----
+  async function guardar() {
+    const nome = prompt("Nome do projeto 3D:");
+    if (!nome) return;
+    await fetch("/api/scene/save", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome, partes: serialize() }),
+    });
+    title.textContent = "GUARDADO: " + nome.toUpperCase();
+  }
+  async function carregar() {
+    const r = await fetch("/api/scene/list");
+    const { projetos } = await r.json();
+    if (!projetos || !projetos.length) { alert("Ainda não há projetos guardados."); return; }
+    const nome = prompt("Carregar qual?\n" + projetos.join(", "), projetos[0]);
+    if (!nome) return;
+    const res = await (await fetch("/api/scene/load?nome=" + encodeURIComponent(nome))).json();
+    if (res.ok) showScene(res.partes); else alert(res.erro || "Não encontrado.");
+  }
+
   window.HoloLab = { show, showScene, hide };
 
-  document.getElementById("holoClose").addEventListener("click", hide);
-  const expBtn = document.getElementById("holoExport");
-  if (expBtn) expBtn.addEventListener("click", exportOBJ);
+  // ---- Ligações de botões ----
+  const on = (id, fn) => { const b = document.getElementById(id); if (b) b.addEventListener("click", fn); };
+  on("holoClose", hide);
+  on("holoExport", exportOBJ);
+  on("holoAdd", () => addPiece(sel ? sel.value : "reator"));
+  on("holoRemove", removeSelected);
+  on("holoSave", guardar);
+  on("holoLoad", carregar);
+  on("holoEdit", () => {
+    editor = !editor;
+    const b = document.getElementById("holoEdit");
+    if (b) b.classList.toggle("ativo", editor);
+    title.textContent = editor ? "MODO EDITOR" : "HOLO-LAB";
+  });
   const sel = document.getElementById("holoSelect");
-  if (sel) sel.addEventListener("change", () => show(sel.value, null, "#35e6ff"));
+  if (sel) sel.addEventListener("change", () => { if (!editor) show(sel.value, null, "#35e6ff"); });
 
-  // ---- Controlo por rato/toque: rodar e zoom ----
+  // ---- Controlo por rato/toque: rodar, mover peças, zoom ----
+  function toCanvas(e) {
+    const r = canvas.getBoundingClientRect();
+    const cx = (e.clientX ?? e.touches[0].clientX);
+    const cy = (e.clientY ?? e.touches[0].clientY);
+    const s = canvas.width / r.width;
+    return { x: (cx - r.left) * s, y: (cy - r.top) * s, cx, cy };
+  }
+
   function pointerDown(e) {
+    const c = toCanvas(e);
+    px = c.cx; py = c.cy;
+    if (editor) {
+      // seleciona a peça mais próxima do clique
+      let best = -1, bd = 40;
+      instancias.forEach((inst, i) => {
+        const s = centroEcra(inst);
+        const d = Math.hypot(s[0] - c.x, s[1] - c.y);
+        if (d < bd) { bd = d; best = i; }
+      });
+      if (best >= 0) { selectedIndex = best; moving = true; return; }
+      selectedIndex = -1;
+    }
     dragging = true;
-    px = e.clientX ?? e.touches[0].clientX;
-    py = e.clientY ?? e.touches[0].clientY;
   }
   function pointerMove(e) {
-    if (!dragging) return;
-    const x = e.clientX ?? e.touches[0].clientX;
-    const y = e.clientY ?? e.touches[0].clientY;
-    ang += (x - px) * 0.01;
-    tilt = Math.max(-1.4, Math.min(1.4, tilt + (y - py) * 0.01));
-    px = x; py = y;
+    if (!moving && !dragging) return;
+    const cx = (e.clientX ?? e.touches[0].clientX);
+    const cy = (e.clientY ?? e.touches[0].clientY);
+    const s = canvas.width / canvas.getBoundingClientRect().width;
+    const cdx = (cx - px) * s, cdy = (cy - py) * s;
+    px = cx; py = cy;
+    if (moving && selectedIndex >= 0) {
+      const zoom = canvas.width * 0.3 * zoomFactor;
+      const u = cdx / zoom;
+      const inst = instancias[selectedIndex];
+      inst.pos[0] = clamp(inst.pos[0] + Math.cos(ang) * u);
+      inst.pos[2] = clamp(inst.pos[2] - Math.sin(ang) * u);
+      inst.pos[1] = clamp(inst.pos[1] - cdy / (zoom * Math.max(0.3, Math.cos(tilt))));
+    } else if (dragging) {
+      ang += cdx * 0.01;
+      tilt = Math.max(-1.4, Math.min(1.4, tilt + cdy * 0.01));
+    }
   }
-  function pointerUp() { dragging = false; }
+  function clamp(v) { return Math.max(-3, Math.min(3, v)); }
+  function pointerUp() {
+    if (moving) syncScene();
+    moving = false; dragging = false;
+  }
 
   canvas.addEventListener("mousedown", pointerDown);
   window.addEventListener("mousemove", pointerMove);

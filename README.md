@@ -15,7 +15,8 @@ holográfico** ao estilo do filme e a correr **localmente e gratuito** com o
 ## ✨ O que faz
 
 - **Voz** — fala e ouve. No HUD web usa a voz do próprio browser (sem instalar
-  nada). No terminal há um modo de voz opcional em Python.
+  nada). No terminal há um modo de voz opcional em Python. Tem **palavra de
+  ativação**: liga o 🎧 e diz *"Jarvis…"* para ativar sem clicar.
 - **Cérebro local** — usa o Ollama, sem chaves de API nem custos por uso.
 - **Memória** — lembra-se da conversa e de factos sobre ti (SQLite).
 - **Ferramentas** — meteorologia, pesquisa na web, ler/escrever ficheiros,
@@ -98,7 +99,8 @@ python -m jarvis voz
 | `abrir_pagina` | Abre um site ou pesquisa no ecrã |
 | `construir_modelo` / `construir_cena` | Projeta peças 3D no Holo-Lab (com tamanho/cor/composição) |
 | `criar_projeto` | Cria uma aplicação (web, react, python, flask, node, api) na sandbox |
-| `exportar_modelo` | Exporta uma peça 3D para `.obj` (impressão 3D) |
+| `exportar_modelo` | Exporta uma peça 3D (sólido fechado) para `.obj` |
+| `guardar_projeto` / `carregar_projeto` / `listar_projetos` | Gere projetos 3D entre sessões |
 | `verificar_ameacas` / `analisar_processos` / `analisar_rede` / `analisar_ficheiros` / `calcular_hash` | Cibersegurança (só de leitura) |
 | `agendar_verificacao` / `estado_seguranca` | Verificações de segurança automáticas |
 | `executar_comando` | Comandos do sistema — **desligado por omissão** |
@@ -116,9 +118,17 @@ manopla, núcleo, anel, motor, estrutura).
 **Controlos:** arrasta com o rato para **rodar** e usa a **roda do rato para
 zoom** (funciona também por toque no telemóvel).
 
-**Exportar para impressão 3D:** botão **⬇ .obj** no Holo-Lab, ou pede
-*"exporta o reator para .obj"*. Gera um ficheiro `.obj` (formato 3D aberto) na
-área de trabalho; as peças sólidas saem com faces prontas para um fatiador.
+**Editor visual:** carrega em **✏️ Editor**, escolhe uma peça e usa **＋** para a
+adicionar; depois **arrasta as peças com o rato** para as posicionar e monta
+cenas (ex: um robô). **🗑** remove a peça selecionada.
+
+**Guardar/carregar projetos:** **💾** guarda a cena com um nome e **📂** carrega-a
+noutra sessão. Também por voz: *"guarda o projeto como reator-v2"*,
+*"carrega o projeto reator-v2"*.
+
+**Exportar para impressão 3D:** botão **⬇ .obj** ou *"exporta o reator para .obj"*.
+Todas as peças são geradas como **sólidos fechados (watertight)** — malhas
+manifold prontas a fatiar e imprimir.
 
 > Nota: isto é **visualização e modelação 3D**, não fabrico físico — o software
 > desenha, mostra e exporta o modelo; a impressão é feita pela tua impressora 3D
