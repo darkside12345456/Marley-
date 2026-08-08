@@ -16,6 +16,18 @@ from .assistant import Assistant
 from .config import config
 
 
+def _executar_acoes(assistant: Assistant) -> None:
+    """Executa ações de UI no terminal (abrir páginas; modelos 3D só no HUD web)."""
+    for acao in assistant.last_actions:
+        if acao.get("tipo") == "abrir_pagina":
+            try:
+                webbrowser.open(acao["url"])
+            except Exception:
+                print(f"   (abre manualmente: {acao['url']})")
+        elif acao.get("tipo") == "modelo":
+            print(f"   [Holo-Lab 3D disponível no HUD web: peça '{acao.get('peca')}']")
+
+
 def _banner() -> None:
     print("\n".join([
         "",
@@ -58,6 +70,7 @@ def run_text() -> None:
                 continue
             print("🤖 …a pensar")
             print(f"🤖 {assistant.ask(texto)}\n")
+            _executar_acoes(assistant)
     except (KeyboardInterrupt, EOFError):
         pass
     finally:
@@ -84,6 +97,7 @@ def run_voice() -> None:
                 voice.say("Até já, senhor.")
                 break
             voice.say(assistant.ask(texto))
+            _executar_acoes(assistant)
     except (KeyboardInterrupt, EOFError):
         pass
     finally:

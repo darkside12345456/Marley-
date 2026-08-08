@@ -20,6 +20,9 @@ holográfico** ao estilo do filme e a correr **localmente e gratuito** com o
 - **Memória** — lembra-se da conversa e de factos sobre ti (SQLite).
 - **Ferramentas** — meteorologia, pesquisa na web, ler/escrever ficheiros,
   hora, e comandos do sistema (desligados por segurança até tu permitires).
+- **Age por ti** — abre páginas e pesquisas no ecrã quando pedires.
+- **Holo-Lab 3D** — "constrói" e mostra peças em wireframe holográfico a rodar
+  (reator, capacete, manopla, estruturas), estilo desenho do fato no filme.
 - **HUD holográfico** — orbe/reator animado, ondas de voz e transcrição.
 
 ---
@@ -87,7 +90,22 @@ python -m jarvis voz
 | `pesquisar_web` | Pesquisa na Internet (via DuckDuckGo) |
 | `listar_ficheiros` / `ler_ficheiro` / `escrever_ficheiro` | Ficheiros na pasta `workspace/` |
 | `memorizar` / `recordar` | Guarda e recupera factos sobre ti |
+| `abrir_pagina` | Abre um site ou pesquisa no ecrã |
+| `construir_modelo` | Projeta uma peça 3D no Holo-Lab |
 | `executar_comando` | Comandos do sistema — **desligado por omissão** |
+
+### 🔬 Holo-Lab (peças 3D estilo filme)
+
+Pede ao Jarvis, por voz ou texto, coisas como:
+
+> "Constrói-me o reator" · "Mostra-me o capacete em 3D" · "Desenha uma manopla"
+
+Ele projeta a peça num **wireframe holográfico a rodar**. Também tens um botão
+🔬 no HUD para abrir o Holo-Lab e trocar de peça manualmente (reator, capacete,
+manopla, núcleo, anel, motor, estrutura).
+
+> Nota: isto é **visualização 3D**, não fabrico físico — software desenha e
+> mostra, não constrói o objeto real.
 
 ### ⚠️ Comandos do sistema
 

@@ -56,8 +56,9 @@ def create_app(assistant: Assistant | None = None) -> Flask:
             except Exception as exc:  # noqa: BLE001
                 yield f"data: {json.dumps({'erro': str(exc)})}\n\n"
                 return
-            # Envia a resposta completa (o browser fala e mostra).
-            yield f"data: {json.dumps({'resposta': resposta})}\n\n"
+            # Envia a resposta e as ações (abrir página, projetar modelo 3D…).
+            payload = {"resposta": resposta, "acoes": assistant.last_actions}
+            yield f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
             yield "data: [DONE]\n\n"
 
         return Response(gen(), mimetype="text/event-stream")

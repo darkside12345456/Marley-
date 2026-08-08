@@ -10,6 +10,8 @@ from . import web as web_mod
 from . import files as files_mod
 from . import system as system_mod
 from . import basics as basics_mod
+from . import browser as browser_mod
+from . import holo as holo_mod
 
 
 @dataclass
@@ -62,7 +64,7 @@ class ToolRegistry:
         return str(result)
 
 
-def build_default_registry(memory=None, allow_shell: bool = False) -> ToolRegistry:
+def build_default_registry(memory=None, allow_shell: bool = False, actions=None) -> ToolRegistry:
     reg = ToolRegistry()
 
     reg.register(
@@ -164,5 +166,49 @@ def build_default_registry(memory=None, allow_shell: bool = False) -> ToolRegist
         },
         lambda comando: system_mod.run_command(comando, allow_shell),
     )
+
+    # --- Ferramentas de interface (comandam o HUD) ---
+    if actions is not None:
+
+        def _abrir_pagina(alvo: str) -> str:
+            info = browser_mod.normalizar_url(alvo)
+            actions.add("abrir_pagina", url=info["url"], titulo=info["titulo"])
+            return f"A abrir '{info['titulo']}' para o senhor."
+
+        reg.register(
+            "abrir_pagina",
+            "Abre uma página web para mostrar algo ao utilizador. Aceita um URL "
+            "(ex: 'youtube.com') ou um termo de pesquisa (ex: 'notícias de hoje').",
+            {
+                "type": "object",
+                "properties": {
+                    "alvo": {"type": "string", "description": "URL ou termo a pesquisar"}
+                },
+                "required": ["alvo"],
+            },
+            _abrir_pagina,
+        )
+
+        def _construir_modelo(peca: str = "", forma: str = "", cor: str = "") -> str:
+            plano = holo_mod.plan_model(peca or None, forma or None, cor or None)
+            actions.add("modelo", **plano)
+            return f"A projetar '{plano['peca']}' no Holo-Lab (forma: {plano['forma']})."
+
+        reg.register(
+            "construir_modelo",
+            "Projeta e mostra um modelo 3D holográfico no Holo-Lab (estilo desenho "
+            "do fato do filme). Usa para 'constrói', 'mostra em 3D', 'desenha a peça'. "
+            "Formas: reator, capacete, manopla, esfera, toroide, cilindro, estrutura.",
+            {
+                "type": "object",
+                "properties": {
+                    "peca": {"type": "string", "description": "Peça a construir, ex: 'reator', 'capacete', 'manopla'"},
+                    "forma": {"type": "string", "description": "Forma geométrica (opcional)"},
+                    "cor": {"type": "string", "description": "Cor em hex, ex: '#35e6ff' (opcional)"},
+                },
+                "required": ["peca"],
+            },
+            _construir_modelo,
+        )
 
     return reg

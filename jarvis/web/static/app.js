@@ -139,6 +139,30 @@
     recognition.start();
   });
 
+  // ---- Ações comandadas pelo Jarvis ----
+  function addLink(titulo, url) {
+    const a = document.createElement("a");
+    a.className = "msg bot link";
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = "🔗 " + titulo;
+    transcript.appendChild(a);
+    transcript.scrollTop = transcript.scrollHeight;
+  }
+
+  function executeActions(acoes) {
+    for (const acao of acoes) {
+      if (acao.tipo === "abrir_pagina") {
+        const win = window.open(acao.url, "_blank", "noopener");
+        // se o browser bloquear o popup, deixa um link clicável
+        if (!win) addLink(acao.titulo || acao.url, acao.url);
+      } else if (acao.tipo === "modelo") {
+        if (window.HoloLab) window.HoloLab.show(acao.forma, acao.peca, acao.cor);
+      }
+    }
+  }
+
   // ---- Comunicação com o backend ----
   async function send(text) {
     text = (text || "").trim();
@@ -168,6 +192,7 @@
           const obj = JSON.parse(line);
           if (obj.erro) { answer = "Peço desculpa, ocorreu um erro: " + obj.erro; }
           else if (obj.resposta) { answer = obj.resposta; }
+          if (obj.acoes) executeActions(obj.acoes);
         }
       }
       addMsg(answer, "bot");
@@ -181,6 +206,10 @@
 
   sendBtn.addEventListener("click", () => send(textInput.value));
   textInput.addEventListener("keydown", (e) => { if (e.key === "Enter") send(textInput.value); });
+  const labBtn = document.getElementById("labBtn");
+  if (labBtn) labBtn.addEventListener("click", () => {
+    if (window.HoloLab) window.HoloLab.show("reator", null, "#35e6ff");
+  });
   resetBtn.addEventListener("click", async () => {
     await fetch("/api/reset", { method: "POST" });
     transcript.innerHTML = "";

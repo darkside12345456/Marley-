@@ -22,6 +22,24 @@
       <canvas id="orb" width="520" height="520"></canvas>
       <div class="state-label" id="stateLabel">EM ESPERA</div>
     </div>
+
+    <!-- Holo-Lab: laboratório 3D holográfico -->
+    <div class="holo-lab hidden" id="holoLab">
+      <div class="holo-title" id="holoTitle">REATOR ARC</div>
+      <canvas id="holoCanvas" width="560" height="560"></canvas>
+      <div class="holo-controls">
+        <select id="holoSelect">
+          <option value="reator">Reator Arc</option>
+          <option value="capacete">Capacete</option>
+          <option value="manopla">Manopla</option>
+          <option value="esfera">Núcleo</option>
+          <option value="toroide">Anel de energia</option>
+          <option value="cilindro">Motor</option>
+          <option value="estrutura">Estrutura</option>
+        </select>
+        <button id="holoClose">Fechar</button>
+      </div>
+    </div>
   </main>
 
   <section class="transcript" id="transcript"></section>
@@ -32,9 +50,11 @@
     </button>
     <input id="textInput" type="text" placeholder="Escreve ou fala com o Jarvis…" autocomplete="off" />
     <button id="sendBtn" class="send">Enviar</button>
+    <button id="labBtn" class="reset" title="Abrir o Holo-Lab (3D)">🔬</button>
     <button id="resetBtn" class="reset" title="Limpar memória da conversa">⟲</button>
   </footer>
 
+  <script src="/static/hololab.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 """O orquestrador do Jarvis: junta cérebro + memória + ferramentas."""
 from __future__ import annotations
 
+from .actions import ActionSink
 from .brain import Brain
 from .config import Config
 from .memory import Memory
@@ -12,7 +13,9 @@ class Assistant:
         self.config = config
         self.brain = Brain(config.ollama_host, config.model, config.temperature)
         self.memory = Memory(config.db_path)
-        self.tools = build_default_registry(self.memory, config.allow_shell)
+        self.actions = ActionSink()
+        self.last_actions: list[dict] = []
+        self.tools = build_default_registry(self.memory, config.allow_shell, self.actions)
 
     def _base_messages(self) -> list[dict]:
         system = self.config.system_prompt()
@@ -26,6 +29,7 @@ class Assistant:
     def ask(self, user_text: str, max_tool_rounds: int = 5) -> str:
         """Pergunta com ciclo de ferramentas. Devolve a resposta final em texto."""
         self.memory.add_message("user", user_text)
+        self.actions.clear()
         messages = self._base_messages()
 
         for _ in range(max_tool_rounds):
@@ -34,6 +38,7 @@ class Assistant:
             if not tool_calls:
                 answer = (msg.get("content") or "").strip()
                 self.memory.add_message("assistant", answer)
+                self.last_actions = self.actions.drain()
                 return answer
 
             messages.append(msg)
@@ -48,6 +53,7 @@ class Assistant:
         final = self.brain.chat(messages)
         answer = (final.get("content") or "").strip()
         self.memory.add_message("assistant", answer)
+        self.last_actions = self.actions.drain()
         return answer
 
     def reset(self) -> None:
