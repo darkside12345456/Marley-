@@ -365,6 +365,9 @@
   if (labBtn) labBtn.addEventListener("click", () => {
     if (window.HoloLab) window.HoloLab.show("reator", null, window.JARVIS_PRIMARY);
   });
+  const newsBtn = document.getElementById("newsBtn");
+  if (newsBtn) newsBtn.addEventListener("click", () =>
+    send("Quais são as últimas notícias e novidades de hoje?"));
   const shieldBtn = document.getElementById("shieldBtn");
   if (shieldBtn) shieldBtn.addEventListener("click", () =>
     send("Faz uma auditoria de segurança completa ao meu computador."));

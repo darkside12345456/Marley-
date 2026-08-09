@@ -110,6 +110,7 @@ python -m jarvis voz
 | `obter_hora` | Data e hora atuais |
 | `obter_meteorologia` | Meteorologia (via Open-Meteo, grátis) |
 | `pesquisar_web` | Pesquisa na Internet (via DuckDuckGo) |
+| `obter_noticias` | **Notícias e novidades atuais** de qualquer campo (Google News) |
 | `listar_ficheiros` / `ler_ficheiro` / `escrever_ficheiro` | Ficheiros na pasta `workspace/` |
 | `memorizar` / `recordar` | Guarda e recupera factos sobre ti |
 | `abrir_pagina` | Abre um site ou pesquisa no ecrã |
@@ -248,6 +249,22 @@ janela própria em vez do browser:
 pip install ".[desktop]"
 python run_desktop.py
 ```
+
+---
+
+## 📰 Está sempre atualizada?
+
+O **modelo** (cérebro) tem conhecimento "congelado" na data de treino — não se
+atualiza sozinho. Mas a Sonny **consulta fontes em tempo real** para te dar
+informação atual:
+
+> "Quais são as últimas notícias?" · "Novidades em inteligência artificial" ·
+> "O que se passa na economia hoje?" · botão **📰** no HUD
+
+Usa o `obter_noticias` (Google News RSS, gratuito, sem chave) para qualquer
+campo, e o `pesquisar_web` para pesquisas gerais. Precisa de **Internet** e a
+qualidade depende das fontes — não é "saber tudo", é *consultar as últimas
+fontes* quando perguntas.
 
 ---
 

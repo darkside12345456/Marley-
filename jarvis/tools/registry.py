@@ -11,6 +11,7 @@ from . import files as files_mod
 from . import system as system_mod
 from . import basics as basics_mod
 from . import browser as browser_mod
+from . import news as news_mod
 from . import holo as holo_mod
 from . import projects as projects_mod
 from . import coding as coding_mod
@@ -104,6 +105,21 @@ def build_default_registry(memory=None, allow_shell: bool = False, actions=None)
             "required": ["consulta"],
         },
         web_mod.web_search,
+    )
+    reg.register(
+        "obter_noticias",
+        "Traz notícias e novidades ATUAIS de qualquer campo (mundo, tecnologia, "
+        "ciência, economia, desporto, saúde, IA, etc.). Usa sempre isto para "
+        "'últimas notícias', 'novidades', 'o que há de novo em X' ou assuntos "
+        "recentes — o teu conhecimento interno pode estar desatualizado.",
+        {
+            "type": "object",
+            "properties": {
+                "tema": {"type": "string", "description": "Campo/assunto (vazio = manchetes principais)"},
+                "limite": {"type": "number", "description": "Nº de notícias (1–15)"},
+            },
+        },
+        news_mod.obter_noticias,
     )
     reg.register(
         "listar_ficheiros",
