@@ -185,7 +185,8 @@
     wakeRec.onresult = (e) => {
       let t = "";
       for (const r of e.results) t += r[0].transcript + " ";
-      if (new RegExp(nomeAtivacao, "i").test(t) && !listening) {
+      const escapado = nomeAtivacao.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      if (new RegExp(escapado, "i").test(t) && !listening) {
         try { wakeRec.stop(); } catch { /* ignora */ }
         startCommand();
       }
