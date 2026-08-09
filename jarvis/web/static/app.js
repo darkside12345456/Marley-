@@ -102,8 +102,17 @@
   let vozNome = localStorage.getItem("jarvisVoice") || "";
   let taxa = parseFloat(localStorage.getItem("jarvisRate") || "1.02");
 
+  const FEM_HINTS = ["female", "mulher", "joana", "maria", "catarina", "ines", "inês",
+    "luciana", "fernanda", "helena", "helia", "vitoria", "vitória", "raquel", "google"];
+  function escolherVozFeminina() {
+    const pt = voices.filter((v) => v.lang && v.lang.toLowerCase().startsWith("pt"));
+    const fem = (v) => FEM_HINTS.some((h) => v.name.toLowerCase().includes(h));
+    return (pt.find(fem) || pt[0] || voices.find(fem) || voices[0] || {}).name || "";
+  }
+
   function carregarVozes() {
     voices = synth ? synth.getVoices() : [];
+    if (!vozNome && voices.length) vozNome = escolherVozFeminina();  // voz feminina por omissão
     const sel = document.getElementById("voiceSel");
     if (!sel) return;
     sel.innerHTML = "";
@@ -408,7 +417,7 @@
   }
   const testVoice = document.getElementById("testVoice");
   if (testVoice) testVoice.addEventListener("click", () =>
-    speak("Olá, senhor. Esta é a minha voz atual."));
+    speak("Olá! Esta é a minha voz atual."));
 
   document.querySelectorAll(".tdot").forEach((b) =>
     b.addEventListener("click", () => setTheme(b.dataset.theme)));
@@ -477,7 +486,7 @@
         ultimaSegTs = s.ultima.ts;
         if (s.ultima.nivel && s.ultima.nivel !== "BAIXO") {
           addPanel("🛡️ Alerta de segurança automático", s.ultima.relatorio || "");
-          speak("Atenção, senhor. A verificação automática detetou algo que merece atenção.");
+          speak("Atenção. A verificação automática detetou algo que merece a tua atenção.");
         }
       }
     } catch { /* ignora */ }
@@ -487,7 +496,7 @@
 
   // Saudação inicial
   setTimeout(() => {
-    const hi = "Sistemas online. Bom dia, senhor. Em que posso ajudar?";
+    const hi = "Sistemas online. Olá! Em que posso ajudar?";
     addMsg(hi, "bot");
     speak(hi);
   }, 900);

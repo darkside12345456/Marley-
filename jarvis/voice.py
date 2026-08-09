@@ -24,8 +24,32 @@ class Voice:
 
             self._tts = pyttsx3.init()
             self._tts.setProperty("rate", 175)
+            self._escolher_voz_feminina()
         except Exception:
             self._tts = None
+
+    def _escolher_voz_feminina(self) -> None:
+        """Tenta escolher uma voz feminina (a Sonny é do género feminino)."""
+        hints = ("female", "mulher", "joana", "maria", "catarina", "ines", "inês",
+                 "luciana", "fernanda", "helena", "helia", "raquel", "zira", "hazel")
+        try:
+            vozes = self._tts.getProperty("voices")
+        except Exception:
+            return
+        melhor = None
+        for v in vozes or []:
+            nome = (getattr(v, "name", "") or "").lower()
+            genero = (getattr(v, "gender", "") or "").lower()
+            idiomas = " ".join(str(x) for x in (getattr(v, "languages", []) or [])).lower()
+            if "female" in genero or any(h in nome for h in hints):
+                melhor = v.id
+                if "pt" in nome or "pt" in idiomas:
+                    break
+        if melhor:
+            try:
+                self._tts.setProperty("voice", melhor)
+            except Exception:
+                pass
 
     def say(self, text: str) -> None:
         print(f"🤖 {text}")

@@ -181,7 +181,7 @@ def build_default_registry(memory=None, allow_shell: bool = False, actions=None)
         def _abrir_pagina(alvo: str) -> str:
             info = browser_mod.normalizar_url(alvo)
             actions.add("abrir_pagina", url=info["url"], titulo=info["titulo"])
-            return f"A abrir '{info['titulo']}' para o senhor."
+            return f"A abrir '{info['titulo']}' para si."
 
         reg.register(
             "abrir_pagina",

@@ -74,7 +74,7 @@ def run_text() -> None:
         pass
     finally:
         assistant.close()
-        print("\nAté já, senhor.")
+        print("\nAté já!")
 
 
 def run_voice() -> None:
@@ -86,14 +86,14 @@ def run_voice() -> None:
     if not voice.can_listen:
         print("ℹ️  Microfone/STT indisponível — vou usar o teclado. "
               "(instala com: pip install -r requirements-voz.txt)\n")
-    voice.say("Sistemas online. Em que posso ajudar, senhor?")
+    voice.say("Sistemas online. Em que posso ajudar?")
     try:
         while True:
             texto = voice.listen()
             if not texto:
                 continue
             if texto.lower().strip(" .!") in {"sair", "adeus", "desliga"}:
-                voice.say("Até já, senhor.")
+                voice.say("Até já!")
                 break
             voice.say(assistant.ask(texto))
             _executar_acoes(assistant)
