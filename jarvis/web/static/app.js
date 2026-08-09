@@ -159,7 +159,7 @@
   }
 
   // ---- Palavra de ativação ("Jarvis…") ----
-  let wakeActive = false, wakeRec = null;
+  let wakeActive = false, wakeRec = null, nomeAtivacao = "sony";
   function startCommand() {
     if (!recognition || listening) return;
     synth && synth.cancel();
@@ -176,7 +176,7 @@
     wakeRec.onresult = (e) => {
       let t = "";
       for (const r of e.results) t += r[0].transcript + " ";
-      if (/jarvis/i.test(t) && !listening) {
+      if (new RegExp(nomeAtivacao, "i").test(t) && !listening) {
         try { wakeRec.stop(); } catch { /* ignora */ }
         startCommand();
       }
@@ -191,7 +191,8 @@
     wakeBtn.classList.toggle("listening", wakeActive);
     if (wakeActive) {
       try { wakeRec.start(); } catch { /* ignora */ }
-      addMsg('Palavra de ativação ligada. Diz "Jarvis" e depois o teu pedido.', "bot");
+      const n = document.querySelector(".brand").textContent;
+      addMsg('Palavra de ativação ligada. Diz "' + n + '" e depois o teu pedido.', "bot");
     } else {
       try { wakeRec.stop(); } catch { /* ignora */ }
     }
@@ -446,6 +447,11 @@
     try {
       const r = await fetch("/api/status");
       const s = await r.json();
+      if (s.nome) {
+        document.querySelector(".brand").textContent = s.nome.toUpperCase();
+        document.title = s.nome;
+        nomeAtivacao = s.nome.toLowerCase();
+      }
       if (s.ollama_ativo) {
         dot.className = "dot online";
         statusText.textContent = `online · ${s.modelo}`;

@@ -11,7 +11,7 @@ import threading
 
 from jarvis.config import config
 
-APP_NOME = "J.A.R.V.I.S."
+APP_NOME = config.name
 
 
 def _iniciar_servidor() -> None:

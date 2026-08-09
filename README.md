@@ -1,14 +1,18 @@
-# 🤖 J.A.R.V.I.S.
+# 🤖 SONY
 
-Um assistente pessoal inteligente inspirado no J.A.R.V.I.S. do Homem de Ferro.
-Fala e ouve, tem memória, usa ferramentas (meteorologia, pesquisa, ficheiros,
-comandos do sistema) e ajuda-te a **desenvolver ideias** — tudo com um **HUD
-holográfico** ao estilo do filme e a correr **localmente e gratuito** com o
-[Ollama](https://ollama.com).
+O **Sony** é um assistente pessoal inteligente inspirado no J.A.R.V.I.S. do
+Homem de Ferro. Fala e ouve, tem memória, usa ferramentas (meteorologia,
+pesquisa, ficheiros, comandos do sistema) e ajuda-te a **desenvolver ideias** —
+tudo com um **HUD holográfico** ao estilo do filme e a correr **localmente e
+gratuito** com o [Ollama](https://ollama.com).
 
 > Nota honesta: hologramas físicos reais não são possíveis por software. O que
 > tens aqui é uma interface visual futurista "holográfica" (orbe/reator animado
-> que reage quando ouve, pensa e fala) muito ao estilo Jarvis.
+> que reage quando ouve, pensa e fala).
+>
+> O nome apresentado é **Sony** (podes mudá-lo com `JARVIS_NAME` no `.env`). O
+> pacote e o comando continuam a chamar-se `jarvis` por serem identificadores
+> técnicos.
 
 ---
 
@@ -16,7 +20,7 @@ holográfico** ao estilo do filme e a correr **localmente e gratuito** com o
 
 - **Voz** — fala e ouve. No HUD web usa a voz do próprio browser (sem instalar
   nada). No terminal há um modo de voz opcional em Python. Tem **palavra de
-  ativação**: liga o 🎧 e diz *"Jarvis…"* para ativar sem clicar.
+  ativação**: liga o 🎧 e diz *"Sony…"* para ativar sem clicar.
 - **Cérebro local** — usa o Ollama, sem chaves de API nem custos por uso.
 - **Memória** — lembra-se da conversa e de factos sobre ti (SQLite).
 - **Ferramentas** — meteorologia, pesquisa na web, ler/escrever ficheiros,
