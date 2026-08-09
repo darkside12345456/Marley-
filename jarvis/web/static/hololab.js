@@ -145,6 +145,7 @@
   let instancias = [], ang = 0, tilt = 0.5, running = false;
   let zoomFactor = 1, autoRotate = true, dragging = false, px = 0, py = 0;
   let editor = false, selectedIndex = -1, moving = false, corAtual = "#35e6ff";
+  let history = [], hp = -1;
 
   function projeta(p, cx, cy, zoom) {
     let [x, y, z] = p;
@@ -238,12 +239,35 @@
     }).catch(() => {});
   }
 
+  // ---- Histórico (undo/redo) ----
+  function pushHistory() {
+    history = history.slice(0, hp + 1);
+    history.push(serialize());
+    if (history.length > 60) history.shift();
+    hp = history.length - 1;
+  }
+  function resetHistory() { history = []; hp = -1; pushHistory(); }
+  function rebuild(partes) {
+    instancias = partes.map((p) => _inst(p.forma, p.cor, p.escala, p.segmentos, p.pos));
+    selectedIndex = -1;
+  }
+  function undo() {
+    if (hp <= 0) return;
+    hp--; rebuild(history[hp]); title.textContent = "↶ DESFEITO"; syncScene();
+  }
+  function redo() {
+    if (hp >= history.length - 1) return;
+    hp++; rebuild(history[hp]); title.textContent = "↷ REFEITO"; syncScene();
+  }
+  function commit() { pushHistory(); syncScene(); }
+
   function show(forma, peca, cor, escala, segmentos) {
     const f = NOMES[forma] ? forma : "reator";
     instancias = [_inst(f, cor, escala, segmentos, [0, 0, 0])];
     selectedIndex = -1;
     title.textContent = (peca && String(peca).toUpperCase()) || NOMES[f] || f.toUpperCase();
     abrir();
+    resetHistory();
     syncScene();
   }
 
@@ -253,6 +277,7 @@
     selectedIndex = -1;
     title.textContent = "CENA (" + partes.length + " peças)";
     abrir();
+    resetHistory();
     syncScene();
   }
 
@@ -266,7 +291,7 @@
     selectedIndex = instancias.length - 1;
     title.textContent = "EDITOR (" + instancias.length + " peças)";
     abrir();
-    syncScene();
+    commit();
   }
   function duplicateSelected() {
     if (selectedIndex < 0) return;
@@ -274,19 +299,19 @@
     const pos = [clamp(s.pos[0] + 0.5), s.pos[1], clamp(s.pos[2] + 0.5)];
     instancias.push(_inst(s.forma, s.cor, s.escala, s.seg, pos));
     selectedIndex = instancias.length - 1;
-    syncScene();
+    commit();
   }
   function removeSelected() {
     if (selectedIndex < 0) return;
     instancias.splice(selectedIndex, 1);
     selectedIndex = -1;
-    syncScene();
+    commit();
   }
   function setColor(hex) {
     corAtual = hex;
     if (editor && selectedIndex >= 0) {
       instancias[selectedIndex].cor = hex;
-      syncScene();
+      commit();
     }
   }
 
@@ -345,22 +370,45 @@
     });
     title.textContent = "GUARDADO: " + nome.toUpperCase();
   }
-  async function carregar() {
+  async function refreshGallery() {
     const grid = document.getElementById("galleryGrid");
     const gallery = document.getElementById("holoGallery");
     const { projetos } = await (await fetch("/api/scene/list")).json();
-    if (!projetos || !projetos.length) { alert("Ainda não há projetos guardados."); return; }
     grid.innerHTML = "";
+    if (!projetos || !projetos.length) {
+      grid.innerHTML = '<p style="opacity:.6">Ainda não há projetos guardados.</p>';
+      gallery.classList.remove("hidden");
+      return;
+    }
     for (const p of projetos) {
       const card = document.createElement("div");
       card.className = "gallery-card";
       const img = document.createElement(p.thumb ? "img" : "div");
-      if (p.thumb) img.src = "/api/scene/thumb/" + encodeURIComponent(p.nome);
+      if (p.thumb) img.src = "/api/scene/thumb/" + encodeURIComponent(p.nome) + "?t=" + Date.now();
       else { img.className = "no-thumb"; img.textContent = "3D"; }
       const lbl = document.createElement("span");
       lbl.textContent = p.nome;
+      const acts = document.createElement("div");
+      acts.className = "card-acts";
+      const bR = document.createElement("button"); bR.textContent = "✎"; bR.title = "Renomear";
+      const bD = document.createElement("button"); bD.textContent = "🗑"; bD.title = "Apagar";
+      bR.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const novo = prompt("Novo nome:", p.nome);
+        if (!novo || novo === p.nome) return;
+        const r = await postJSON("/api/scene/rename", { nome: p.nome, novo });
+        if (r.erro) alert(r.erro); else refreshGallery();
+      });
+      bD.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (!confirm(`Apagar o projeto "${p.nome}"?`)) return;
+        await postJSON("/api/scene/delete", { nome: p.nome });
+        refreshGallery();
+      });
+      acts.appendChild(bR); acts.appendChild(bD);
       card.appendChild(img);
       card.appendChild(lbl);
+      card.appendChild(acts);
       card.addEventListener("click", async () => {
         const res = await (await fetch("/api/scene/load?nome=" + encodeURIComponent(p.nome))).json();
         gallery.classList.add("hidden");
@@ -370,6 +418,11 @@
     }
     gallery.classList.remove("hidden");
   }
+  function postJSON(url, body) {
+    return fetch(url, { method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(body) }).then((r) => r.json());
+  }
+  async function carregar() { refreshGallery(); }
 
   window.HoloLab = { show, showScene, hide };
 
@@ -380,6 +433,16 @@
   on("holoAdd", () => addPiece(sel ? sel.value : "reator"));
   on("holoDup", duplicateSelected);
   on("holoRemove", removeSelected);
+  on("holoUndo", undo);
+  on("holoRedo", redo);
+  window.addEventListener("keydown", (e) => {
+    if (panel.classList.contains("hidden")) return;
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+      e.preventDefault(); e.shiftKey ? redo() : undo();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+      e.preventDefault(); redo();
+    }
+  });
   on("holoSave", guardar);
   on("holoLoad", carregar);
   on("galleryClose", () => document.getElementById("holoGallery").classList.add("hidden"));
@@ -446,7 +509,7 @@
   }
   function clamp(v) { return Math.max(-3, Math.min(3, v)); }
   function pointerUp() {
-    if (moving) syncScene();
+    if (moving) commit();
     moving = false; dragging = false;
   }
 

@@ -72,6 +72,33 @@ class SceneStore:
         p = _DIR / f"{_slug(nome)}.png"
         return p if p.is_file() else None
 
+    def apagar(self, nome: str) -> dict:
+        slug = _slug(nome)
+        j = _DIR / f"{slug}.json"
+        if not j.is_file():
+            return {"erro": f"projeto '{nome}' não encontrado."}
+        j.unlink(missing_ok=True)
+        (_DIR / f"{slug}.png").unlink(missing_ok=True)
+        return {"ok": True, "apagado": nome}
+
+    def renomear(self, nome: str, novo: str) -> dict:
+        slug, nslug = _slug(nome), _slug(novo)
+        j = _DIR / f"{slug}.json"
+        if not j.is_file():
+            return {"erro": f"projeto '{nome}' não encontrado."}
+        if (_DIR / f"{nslug}.json").exists() and nslug != slug:
+            return {"erro": f"já existe um projeto chamado '{novo}'."}
+        dados = json.loads(j.read_text(encoding="utf-8"))
+        dados["nome"] = novo
+        (_DIR / f"{nslug}.json").write_text(
+            json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8")
+        png = _DIR / f"{slug}.png"
+        if png.is_file() and nslug != slug:
+            png.rename(_DIR / f"{nslug}.png")
+        if nslug != slug:
+            j.unlink(missing_ok=True)
+        return {"ok": True, "nome": novo}
+
 
 _store: SceneStore | None = None
 

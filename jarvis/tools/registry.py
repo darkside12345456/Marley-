@@ -13,7 +13,9 @@ from . import basics as basics_mod
 from . import browser as browser_mod
 from . import holo as holo_mod
 from . import projects as projects_mod
+from . import coding as coding_mod
 from .. import security as security_mod
+from .. import knowledge as knowledge_mod
 from .. import mesh as mesh_mod
 from ..config import WORKSPACE_DIR
 from ..scheduler import get_scheduler
@@ -419,6 +421,68 @@ def build_default_registry(memory=None, allow_shell: bool = False, actions=None)
         "Lista os projetos 3D guardados.",
         {"type": "object", "properties": {}},
         lambda: {"projetos": get_store().listar()},
+    )
+    reg.register(
+        "apagar_projeto",
+        "Apaga um projeto 3D guardado.",
+        {"type": "object", "properties": {"nome": {"type": "string"}}, "required": ["nome"]},
+        lambda nome: get_store().apagar(nome),
+    )
+    reg.register(
+        "renomear_projeto",
+        "Renomeia um projeto 3D guardado.",
+        {"type": "object", "properties": {"nome": {"type": "string"}, "novo": {"type": "string"}},
+         "required": ["nome", "novo"]},
+        lambda nome, novo: get_store().renomear(nome, novo),
+    )
+
+    # --- Programação em qualquer linguagem ---
+    def _escrever_codigo(nome: str, linguagem: str, codigo: str) -> dict:
+        res = coding_mod.guardar_codigo(nome, linguagem, codigo)
+        if res.get("ok"):
+            _painel(f"💻 Código escrito ({res['linguagem']})",
+                    f"Ficheiro: {res['ficheiro']} · {res['linhas']} linha(s).")
+            if actions is not None and res["ficheiro"].endswith((".html", ".htm")):
+                rel = res["ficheiro"].split("workspace/", 1)[-1]
+                actions.add("abrir_pagina", url=f"/workspace/{rel}", titulo=nome)
+        return res
+
+    reg.register(
+        "escrever_codigo",
+        "Escreve código em QUALQUER linguagem (Python, JS, C++, Rust, Go, Java, "
+        "SQL, etc.) e guarda o ficheiro na área de trabalho. Tu geras o código; "
+        "esta ferramenta apenas o grava com a extensão certa.",
+        {
+            "type": "object",
+            "properties": {
+                "nome": {"type": "string", "description": "Nome do ficheiro (sem extensão é ok)"},
+                "linguagem": {"type": "string", "description": "Ex: 'python', 'rust', 'c++'"},
+                "codigo": {"type": "string", "description": "O código completo"},
+            },
+            "required": ["nome", "linguagem", "codigo"],
+        },
+        _escrever_codigo,
+    )
+
+    # --- Conhecimento de cibersegurança (defensivo) ---
+    def _consultar_seguranca(topico: str = "") -> dict:
+        res = knowledge_mod.consultar(topico)
+        if res.get("conselho"):
+            _painel(f"🔐 Segurança: {res['topico']}", res["conselho"])
+        return res
+
+    reg.register(
+        "consultar_seguranca",
+        "Consulta conhecimento de cibersegurança defensiva sobre um tópico "
+        "(palavras-passe, phishing, ransomware, 2FA, OWASP, backups, etc.).",
+        {"type": "object", "properties": {"topico": {"type": "string"}}},
+        _consultar_seguranca,
+    )
+    reg.register(
+        "listar_topicos_seguranca",
+        "Lista os tópicos de cibersegurança disponíveis.",
+        {"type": "object", "properties": {}},
+        lambda: {"topicos": knowledge_mod.listar_topicos()},
     )
 
     return reg

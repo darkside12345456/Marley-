@@ -108,6 +108,8 @@ python -m jarvis voz
 | `abrir_pagina` | Abre um site ou pesquisa no ecrã |
 | `construir_modelo` / `construir_cena` | Projeta peças 3D no Holo-Lab (com tamanho/cor/composição) |
 | `criar_projeto` | Cria uma aplicação (web, react, python, flask, node, api) na sandbox |
+| `escrever_codigo` | Escreve código em **qualquer linguagem** e grava o ficheiro |
+| `consultar_seguranca` / `listar_topicos_seguranca` | Conhecimento de **cibersegurança defensiva** |
 | `exportar_modelo` | Exporta uma peça 3D (sólido fechado) para `.obj` |
 | `guardar_projeto` / `carregar_projeto` / `listar_projetos` | Gere projetos 3D entre sessões |
 | `verificar_ameacas` / `analisar_processos` / `analisar_rede` / `analisar_ficheiros` / `calcular_hash` | Cibersegurança (só de leitura) |
@@ -217,7 +219,32 @@ scripts\build_app.bat
 ```
 
 A app fica em `dist/Jarvis` (`dist/Jarvis.exe` no Windows) — faz duplo-clique e o
-HUD abre no browser. (O Ollama continua a ser preciso para o "cérebro".)
+HUD abre. (O Ollama continua a ser preciso para o "cérebro".)
+
+**Ícone:** já vem um ícone de reator arc (`assets/icon.ico`). Para o regenerar:
+`python scripts/make_icon.py`.
+
+**Janela nativa (sem browser):** instala o `pywebview` e o Jarvis abre numa
+janela própria em vez do browser:
+
+```bash
+pip install ".[desktop]"
+python run_desktop.py
+```
+
+---
+
+## 💻 Programar e cibersegurança
+
+- **Todas as linguagens:** pede *"escreve-me um servidor HTTP em Rust"* ou
+  *"faz um script Python que organiza fotos"* — o Jarvis escreve o código e
+  guarda-o na área de trabalho com a extensão certa. Para melhores resultados de
+  programação, usa um modelo de código no Ollama (ex: `ollama pull qwen2.5-coder`
+  e define `JARVIS_MODEL=qwen2.5-coder`).
+- **Cibersegurança defensiva:** pergunta *"como me protejo de ransomware?"*,
+  *"o que é phishing?"*, *"boas práticas de palavras-passe"*. O Jarvis dá
+  conselhos corretos de **proteção, deteção e resposta**. Por princípio, **só
+  ajuda na defesa** — nunca em ataques ou software malicioso.
 
 ---
 

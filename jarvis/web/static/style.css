@@ -199,6 +199,8 @@ button:hover { border-color: var(--cyan); box-shadow: var(--glow); }
   color: var(--cyan-dim); font-size: 22px; letter-spacing: 2px; }
 .gallery-card span { display: block; margin-top: 6px; font-size: 12px; color: #cdefff;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-acts { display: flex; gap: 6px; justify-content: center; margin-top: 6px; }
+.card-acts button { padding: 4px 10px; border-radius: 14px; font-size: 12px; }
 
 /* Cartão de link no transcript */
 .msg.link { border-color: var(--cyan); text-decoration: none; display: block; }

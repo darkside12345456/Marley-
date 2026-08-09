@@ -45,4 +45,5 @@ exe = EXE(
     upx=True,
     runtime_tmpdir=None,
     console=False,   # sem janela de terminal (app de ambiente de trabalho)
+    icon="../assets/icon.ico",
 )

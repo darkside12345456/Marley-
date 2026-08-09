@@ -127,6 +127,16 @@ def create_app(assistant: Assistant | None = None) -> Flask:
             return ("Sem miniatura", 404)
         return send_from_directory(caminho.parent, caminho.name)
 
+    @app.route("/api/scene/delete", methods=["POST"])
+    def scene_delete():
+        data = request.get_json(force=True) or {}
+        return jsonify(get_store().apagar(data.get("nome", "")))
+
+    @app.route("/api/scene/rename", methods=["POST"])
+    def scene_rename():
+        data = request.get_json(force=True) or {}
+        return jsonify(get_store().renomear(data.get("nome", ""), data.get("novo", "")))
+
     return app
 
 
