@@ -159,7 +159,7 @@
   }
 
   // ---- Palavra de ativação ("Jarvis…") ----
-  let wakeActive = false, wakeRec = null, nomeAtivacao = "sony";
+  let wakeActive = false, wakeRec = null, nomeAtivacao = "sonny";
   function startCommand() {
     if (!recognition || listening) return;
     synth && synth.cancel();

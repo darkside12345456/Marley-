@@ -29,15 +29,14 @@ def _executar_acoes(assistant: Assistant) -> None:
 
 
 def _banner() -> None:
+    nome = config.name.upper()
+    barra = "═" * (len(nome) + 8)
     print("\n".join([
         "",
-        "   ███████╗ ██████╗ ███╗   ██╗██╗   ██╗",
-        "   ██╔════╝██╔═══██╗████╗  ██║╚██╗ ██╔╝",
-        "   ███████╗██║   ██║██╔██╗ ██║ ╚████╔╝ ",
-        "   ╚════██║██║   ██║██║╚██╗██║  ╚██╔╝  ",
-        "   ███████║╚██████╔╝██║ ╚████║   ██║   ",
-        "   ╚══════╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ",
-        f"   {config.name}   ·   modelo: {config.model}   ·   {config.ollama_host}",
+        f"   ╔{barra}╗",
+        f"   ║    {nome}    ║",
+        f"   ╚{barra}╝",
+        f"   modelo: {config.model}   ·   {config.ollama_host}",
         "",
     ]))
 

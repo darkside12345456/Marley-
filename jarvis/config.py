@@ -41,7 +41,7 @@ class Config:
     temperature: float = float(os.getenv("JARVIS_TEMPERATURE", "0.7"))
 
     # --- Identidade ---
-    name: str = os.getenv("JARVIS_NAME", "Sony")
+    name: str = os.getenv("JARVIS_NAME", "Sonny")
     language: str = os.getenv("JARVIS_LANGUAGE", "pt-PT")
 
     # --- Servidor web (HUD holográfico) ---
