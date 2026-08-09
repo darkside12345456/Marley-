@@ -50,6 +50,8 @@
         <button id="holoScaleUp" title="Aumentar peça selecionada ( ] )">＋🔍</button>
         <button id="holoRotY" title="Rodar peça (horizontal)">⟳</button>
         <button id="holoRotX" title="Rodar peça (vertical)">⤵</button>
+        <button id="holoSnap" title="Ajustar à grelha (snap)">⊞</button>
+        <button id="holoAlign" title="Alinhar todas as peças à grelha">≡</button>
         <button id="holoSave" title="Guardar projeto 3D">💾</button>
         <button id="holoLoad" title="Carregar projeto 3D">📂</button>
         <button id="holoExport" title="Exportar para .obj (impressão 3D)">⬇ .obj</button>
@@ -75,12 +77,38 @@
     </button>
     <input id="textInput" type="text" placeholder="Escreve ou fala com o Jarvis…" autocomplete="off" />
     <button id="sendBtn" class="send">Enviar</button>
+    <button id="settingsBtn" class="reset" title="Definições">⚙️</button>
     <button id="themeBtn" class="reset" title="Mudar tema de cor">🎨</button>
     <button id="wakeBtn" class="reset" title="Palavra de ativação: dizer 'Jarvis'">🎧</button>
     <button id="labBtn" class="reset" title="Abrir o Holo-Lab (3D)">🔬</button>
     <button id="shieldBtn" class="reset" title="Verificar ameaças (cibersegurança)">🛡️</button>
     <button id="resetBtn" class="reset" title="Limpar memória da conversa">⟲</button>
   </footer>
+
+  <!-- Painel de definições -->
+  <div class="settings hidden" id="settings">
+    <div class="settings-head">
+      <span>⚙️ Definições</span>
+      <button id="settingsClose">✕</button>
+    </div>
+    <label class="set-row">Voz
+      <select id="voiceSel"></select>
+    </label>
+    <label class="set-row">Velocidade da voz
+      <input type="range" id="rateInput" min="0.6" max="1.4" step="0.05" value="1.02" />
+    </label>
+    <button id="testVoice" class="set-btn">🔊 Testar voz</button>
+    <div class="set-row">Tema
+      <span class="theme-dots">
+        <button class="tdot" data-theme="ciano" style="background:#35e6ff"></button>
+        <button class="tdot" data-theme="verde" style="background:#35ffa1"></button>
+        <button class="tdot" data-theme="dourado" style="background:#ffd24d"></button>
+        <button class="tdot" data-theme="stark" style="background:#ff5a5a"></button>
+      </span>
+    </div>
+    <button id="histBtn" class="set-btn">📈 Histórico de segurança</button>
+    <div id="histChart" class="hist-chart"></div>
+  </div>
 
   <script src="/static/hololab.js"></script>
   <script src="/static/app.js"></script>

@@ -390,6 +390,7 @@ def build_default_registry(memory=None, allow_shell: bool = False, actions=None)
 
     def _auditoria_seguranca() -> dict:
         rel = security_mod.verificar_ameacas()
+        get_scheduler().registar(rel)  # regista no histórico
         topicos = ["atualizacoes", "backups", "palavras-passe",
                    "autenticacao de dois fatores", "phishing", "ransomware"]
         recomendacoes = [f"• {knowledge_mod.SEGURANCA[t]}" for t in topicos
@@ -407,6 +408,12 @@ def build_default_registry(memory=None, allow_shell: bool = False, actions=None)
         "computador com recomendações de proteção num só relatório.",
         {"type": "object", "properties": {}},
         _auditoria_seguranca,
+    )
+    reg.register(
+        "historico_seguranca",
+        "Mostra o histórico das verificações de segurança (evolução do risco).",
+        {"type": "object", "properties": {}},
+        lambda: {"historico": get_scheduler().historico()},
     )
 
     # --- Guardar / carregar projetos 3D do Holo-Lab ---
@@ -442,6 +449,25 @@ def build_default_registry(memory=None, allow_shell: bool = False, actions=None)
         "Lista os projetos 3D guardados.",
         {"type": "object", "properties": {}},
         lambda: {"projetos": get_store().listar()},
+    )
+
+    def _exportar_cena(nome: str = "cena") -> dict:
+        partes = get_store().atual
+        if not partes:
+            return {"erro": "não há cena para exportar."}
+        base = (nome or "cena").strip().replace("/", "-") or "cena"
+        destino = WORKSPACE_DIR / f"{base}.obj"
+        destino.write_text(mesh_mod.gerar_obj_cena(partes), encoding="utf-8")
+        rel = destino.relative_to(WORKSPACE_DIR)
+        _painel("💾 Cena exportada", f"Ficheiro: workspace/{rel} ({len(partes)} peça(s)).")
+        return {"ok": True, "ficheiro": f"workspace/{rel}", "pecas": len(partes)}
+
+    reg.register(
+        "exportar_cena",
+        "Exporta a cena atual do Holo-Lab (todas as peças) como um único sólido "
+        ".obj para impressão 3D.",
+        {"type": "object", "properties": {"nome": {"type": "string"}}},
+        _exportar_cena,
     )
     reg.register(
         "apagar_projeto",

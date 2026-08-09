@@ -98,12 +98,34 @@
 
   // ---- Voz: síntese (falar) ----
   const synth = window.speechSynthesis;
+  let voices = [];
+  let vozNome = localStorage.getItem("jarvisVoice") || "";
+  let taxa = parseFloat(localStorage.getItem("jarvisRate") || "1.02");
+
+  function carregarVozes() {
+    voices = synth ? synth.getVoices() : [];
+    const sel = document.getElementById("voiceSel");
+    if (!sel) return;
+    sel.innerHTML = "";
+    // vozes portuguesas primeiro
+    const ord = [...voices].sort((a, b) =>
+      (b.lang.startsWith("pt") ? 1 : 0) - (a.lang.startsWith("pt") ? 1 : 0));
+    for (const v of ord) {
+      const o = document.createElement("option");
+      o.value = v.name; o.textContent = `${v.name} (${v.lang})`;
+      if (v.name === vozNome) o.selected = true;
+      sel.appendChild(o);
+    }
+  }
+  if (synth) { synth.onvoiceschanged = carregarVozes; carregarVozes(); }
+
   function speak(text) {
     if (!synth) return;
     synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = "pt-PT";
-    u.rate = 1.02;
+    const v = voices.find((x) => x.name === vozNome);
+    if (v) u.voice = v; else u.lang = "pt-PT";
+    u.rate = taxa;
     u.pitch = 1.0;
     setState("speaking");
     u.onend = () => setState("idle");
@@ -364,6 +386,55 @@
     addMsg("Tema: " + prox, "bot");
   });
   setTheme(localStorage.getItem("jarvisTheme") || "ciano");
+
+  // ---- Painel de definições ----
+  const settings = document.getElementById("settings");
+  const settingsBtn = document.getElementById("settingsBtn");
+  if (settingsBtn) settingsBtn.addEventListener("click", () => settings.classList.toggle("hidden"));
+  const sClose = document.getElementById("settingsClose");
+  if (sClose) sClose.addEventListener("click", () => settings.classList.add("hidden"));
+
+  const voiceSel = document.getElementById("voiceSel");
+  if (voiceSel) voiceSel.addEventListener("change", () => {
+    vozNome = voiceSel.value; localStorage.setItem("jarvisVoice", vozNome);
+  });
+  const rateInput = document.getElementById("rateInput");
+  if (rateInput) {
+    rateInput.value = taxa;
+    rateInput.addEventListener("input", () => {
+      taxa = parseFloat(rateInput.value); localStorage.setItem("jarvisRate", taxa);
+    });
+  }
+  const testVoice = document.getElementById("testVoice");
+  if (testVoice) testVoice.addEventListener("click", () =>
+    speak("Olá, senhor. Esta é a minha voz atual."));
+
+  document.querySelectorAll(".tdot").forEach((b) =>
+    b.addEventListener("click", () => setTheme(b.dataset.theme)));
+
+  // ---- Gráfico do histórico de segurança ----
+  const NIVEL_N = { BAIXO: 1, "MÉDIO": 2, ALTO: 3 };
+  const NIVEL_COR = { BAIXO: "#35ffa1", "MÉDIO": "#ffb84d", ALTO: "#ff5a5a" };
+  const histBtn = document.getElementById("histBtn");
+  if (histBtn) histBtn.addEventListener("click", async () => {
+    const chart = document.getElementById("histChart");
+    const { historico } = await (await fetch("/api/security/history")).json();
+    if (!historico || !historico.length) {
+      chart.innerHTML = '<p style="opacity:.6;font-size:12px">Ainda sem histórico. Faz uma auditoria (🛡️) ou agenda verificações.</p>';
+      return;
+    }
+    const dados = historico.slice(-24);
+    let barras = "";
+    for (const d of dados) {
+      const n = NIVEL_N[d.nivel] || 1;
+      const cor = NIVEL_COR[d.nivel] || "#35e6ff";
+      barras += `<div class="hbar" title="${d.ts} — ${d.nivel}" ` +
+                `style="height:${n * 30}%;background:${cor}"></div>`;
+    }
+    chart.innerHTML = `<div class="hbars">${barras}</div>` +
+      '<div class="hleg"><span style="color:#35ffa1">■ baixo</span> ' +
+      '<span style="color:#ffb84d">■ médio</span> <span style="color:#ff5a5a">■ alto</span></div>';
+  });
   resetBtn.addEventListener("click", async () => {
     await fetch("/api/reset", { method: "POST" });
     transcript.innerHTML = "";

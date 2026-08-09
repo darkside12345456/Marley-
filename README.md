@@ -30,7 +30,8 @@ holográfico** ao estilo do filme e a correr **localmente e gratuito** com o
 - **Cibersegurança** — verifica ameaças no PC (processos, rede, arranque). É
   **defensivo e só de leitura**: deteta e avisa, nunca apaga nada.
 - **HUD holográfico** — orbe/reator animado, ondas de voz e transcrição, com
-  **temas de cor** (🎨 ciano, verde, dourado, vermelho Stark).
+  **temas de cor** (🎨 ciano, verde, dourado, vermelho Stark) e **definições**
+  (⚙️ escolher voz e velocidade da fala).
 - **Programa em qualquer linguagem** e mostra o código com **realce de sintaxe**.
 
 ---
@@ -144,9 +145,13 @@ para desfazer/refazer.
 Também por voz: *"guarda o projeto como reator-v2"*, *"carrega o projeto
 reator-v2"*.
 
-**Exportar para impressão 3D:** botão **⬇ .obj** ou *"exporta o reator para .obj"*.
-Todas as peças são geradas como **sólidos fechados (watertight)** — malhas
-manifold prontas a fatiar e imprimir.
+**Grelha e alinhamento:** no Editor há uma grelha no chão; **⊞** liga o *snap*
+(ajuste à grelha ao mover/adicionar) e **≡** alinha todas as peças de uma vez.
+
+**Exportar para impressão 3D:** botão **⬇ .obj** ou *"exporta a cena para .obj"*.
+Todas as peças são **sólidos fechados (watertight)** e uma **cena inteira** é
+exportada como **um único sólido combinado** (com posições, escalas e rotações
+aplicadas) — pronto a fatiar e imprimir.
 
 > Nota: isto é **visualização e modelação 3D**, não fabrico físico — o software
 > desenha, mostra e exporta o modelo; a impressão é feita pela tua impressora 3D
@@ -183,6 +188,9 @@ pip install -r requirements-seg.txt
 usa `JARVIS_SECURITY_INTERVAL` no `.env`). O Jarvis passa a verificar em segundo
 plano, guarda um registo em `data/security_log.jsonl` e **avisa-te no HUD** (por
 voz e num painel) se o risco subir.
+
+**Histórico:** abre as **Definições (⚙️)** → *Histórico de segurança* para veres
+um **gráfico** da evolução do risco ao longo do tempo.
 
 ### ⚠️ Comandos do sistema
 

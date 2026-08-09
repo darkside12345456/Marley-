@@ -145,7 +145,9 @@
   let instancias = [], ang = 0, tilt = 0.5, running = false;
   let zoomFactor = 1, autoRotate = true, dragging = false, px = 0, py = 0;
   let editor = false, selectedIndex = -1, moving = false, corAtual = "#35e6ff";
-  let history = [], hp = -1;
+  let history = [], hp = -1, snap = false;
+  const GRID = 0.5;
+  function snapVal(v) { return snap ? Math.round(v / GRID) * GRID : v; }
 
   function projeta(p, cx, cy, zoom) {
     let [x, y, z] = p;
@@ -162,6 +164,18 @@
     const w = canvas.width, h = canvas.height, cx = w / 2, cy = h / 2, zoom = w * 0.3 * zoomFactor;
     ctx.clearRect(0, 0, w, h);
     if (autoRotate && !dragging) ang += 0.012;
+
+    // grelha do chão (modo editor)
+    if (editor) {
+      ctx.strokeStyle = "rgba(53,230,255,.18)";
+      ctx.lineWidth = 1; ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+      for (let g = -3; g <= 3; g += GRID) {
+        const a1 = projeta([g, 0, -3], cx, cy, zoom), a2 = projeta([g, 0, 3], cx, cy, zoom);
+        const b1 = projeta([-3, 0, g], cx, cy, zoom), b2 = projeta([3, 0, g], cx, cy, zoom);
+        ctx.beginPath(); ctx.moveTo(a1[0], a1[1]); ctx.lineTo(a2[0], a2[1]); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(b1[0], b1[1]); ctx.lineTo(b2[0], b2[1]); ctx.stroke();
+      }
+    }
 
     for (const inst of instancias) {
       const trans = (p) => {
@@ -301,6 +315,7 @@
   function addPiece(forma) {
     const f = NOMES[forma] ? forma : "reator";
     const pos = [(Math.random() - 0.5) * 1.6, 0, (Math.random() - 0.5) * 1.6];
+    if (snap) { pos[0] = snapVal(pos[0]); pos[2] = snapVal(pos[2]); }
     instancias.push(_inst(f, corAtual, 1, 0, pos));
     selectedIndex = instancias.length - 1;
     title.textContent = "EDITOR (" + instancias.length + " peças)";
@@ -326,6 +341,20 @@
     instancias[selectedIndex].rot[eixo] += delta;
     commit();
   }
+  function alinhar() {
+    if (!instancias.length) return;
+    for (const i of instancias) {
+      i.pos = [Math.round(i.pos[0] / GRID) * GRID,
+               Math.round(i.pos[1] / GRID) * GRID,
+               Math.round(i.pos[2] / GRID) * GRID];
+    }
+    commit();
+  }
+  function setSnap(on) {
+    snap = !!on;
+    const b = document.getElementById("holoSnap");
+    if (b) b.classList.toggle("ativo", snap);
+  }
   function removeSelected() {
     if (selectedIndex < 0) return;
     instancias.splice(selectedIndex, 1);
@@ -340,33 +369,14 @@
     }
   }
 
-  // ---- Exportar para .obj ----
+  // ---- Exportar para .obj (sólido combinado, gerado no servidor) ----
   async function exportOBJ() {
     if (!instancias.length) return;
-    if (instancias.length === 1 && NOMES[instancias[0].forma]) {
-      // sólido fechado gerado no servidor (imprimível)
-      const i = instancias[0];
-      const url = `/api/export/${i.forma}?escala=${i.escala}&segmentos=${i.seg}`;
-      const r = await fetch(url);
-      const txt = await r.text();
-      baixar(txt, i.forma + ".obj");
-      return;
-    }
-    // cena com várias peças: exporta o wireframe combinado
-    const out = ["# Exportado pelo Jarvis Holo-Lab"];
-    let offset = 0;
-    instancias.forEach((inst, ii) => {
-      out.push("o parte" + (ii + 1));
-      for (const p of inst.v) {
-        const r = aplicarRot(p, inst.rot || [0, 0, 0]);
-        out.push(`v ${(r[0] * inst.escala + inst.pos[0]).toFixed(5)} ` +
-                 `${(r[1] * inst.escala + inst.pos[1]).toFixed(5)} ` +
-                 `${(r[2] * inst.escala + inst.pos[2]).toFixed(5)}`);
-      }
-      for (const [a, b] of inst.e) out.push(`l ${a + 1 + offset} ${b + 1 + offset}`);
-      offset += inst.v.length;
+    const r = await fetch("/api/scene/export", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ partes: serialize() }),
     });
-    baixar(out.join("\n") + "\n", "holo-lab.obj");
+    baixar(await r.text(), (instancias.length === 1 ? instancias[0].forma : "cena") + ".obj");
   }
   function baixar(texto, nome) {
     const a = document.createElement("a");
@@ -450,7 +460,7 @@
   }
   async function carregar() { refreshGallery(); }
 
-  window.HoloLab = { show, showScene, hide };
+  window.HoloLab = { show, showScene, hide, setSnap };
 
   // ---- Ligações de botões ----
   const on = (id, fn) => { const b = document.getElementById(id); if (b) b.addEventListener("click", fn); };
@@ -465,6 +475,8 @@
   on("holoScaleUp", () => scaleSel(1.18));
   on("holoRotY", () => rotSel(1, 0.26));
   on("holoRotX", () => rotSel(0, 0.26));
+  on("holoSnap", () => setSnap(!snap));
+  on("holoAlign", alinhar);
   window.addEventListener("keydown", (e) => {
     if (panel.classList.contains("hidden")) return;
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
@@ -546,7 +558,13 @@
   }
   function clamp(v) { return Math.max(-3, Math.min(3, v)); }
   function pointerUp() {
-    if (moving) commit();
+    if (moving) {
+      if (snap && selectedIndex >= 0) {
+        const p = instancias[selectedIndex].pos;
+        p[0] = snapVal(p[0]); p[1] = snapVal(p[1]); p[2] = snapVal(p[2]);
+      }
+      commit();
+    }
     moving = false; dragging = false;
   }
 

@@ -196,3 +196,41 @@ def exportar_obj(forma: str, destino: Path, escala: float = 1.0, segmentos: int 
     destino.parent.mkdir(parents=True, exist_ok=True)
     destino.write_text(gerar_obj(forma, escala, segmentos), encoding="utf-8")
     return destino
+
+
+def _rot(p, rot):
+    """Aplica rotação (rx, ry, rz) — mesma ordem do editor 3D."""
+    x, y, z = p
+    rx, ry, rz = rot
+    y, z = y * math.cos(rx) - z * math.sin(rx), y * math.sin(rx) + z * math.cos(rx)
+    x, z = x * math.cos(ry) + z * math.sin(ry), -x * math.sin(ry) + z * math.cos(ry)
+    x, y = x * math.cos(rz) - y * math.sin(rz), x * math.sin(rz) + y * math.cos(rz)
+    return x, y, z
+
+
+def gerar_obj_cena(partes) -> str:
+    """Exporta uma cena inteira (várias peças) como um único sólido .obj.
+
+    Cada peça é transformada (rotação, escala, posição) e as faces são
+    reindexadas, produzindo uma malha combinada pronta a fatiar.
+    """
+    linhas = ["# Cena exportada pelo Jarvis Holo-Lab (solido combinado)"]
+    offset = 0
+    for idx, parte in enumerate(partes or []):
+        if not isinstance(parte, dict):
+            continue
+        forma = parte.get("forma", "reator")
+        escala = float(parte.get("escala", 1) or 1)
+        seg = int(parte.get("segmentos", 0) or 0)
+        rot = parte.get("rot") or [0, 0, 0]
+        pos = parte.get("pos") or [0, 0, 0]
+        verts, faces = construir(forma, seg)
+        linhas.append(f"o peca{idx + 1}_{forma}")
+        for v in verts:
+            rx, ry, rz = _rot(v, rot)
+            linhas.append(f"v {rx * escala + pos[0]:.5f} "
+                          f"{ry * escala + pos[1]:.5f} {rz * escala + pos[2]:.5f}")
+        for f in faces:
+            linhas.append("f " + " ".join(str(i + 1 + offset) for i in f))
+        offset += len(verts)
+    return "\n".join(linhas) + "\n"

@@ -88,6 +88,10 @@ def create_app(assistant: Assistant | None = None) -> Flask:
     def security_last():
         return jsonify(get_scheduler().estado())
 
+    @app.route("/api/security/history")
+    def security_history():
+        return jsonify({"historico": get_scheduler().historico()})
+
     # --- Exportar um sólido fechado para .obj ---
     @app.route("/api/export/<forma>")
     def export_obj(forma):
@@ -97,6 +101,15 @@ def create_app(assistant: Assistant | None = None) -> Flask:
         return Response(
             obj, mimetype="text/plain",
             headers={"Content-Disposition": f'attachment; filename="{forma}.obj"'},
+        )
+
+    @app.route("/api/scene/export", methods=["POST"])
+    def scene_export():
+        data = request.get_json(force=True) or {}
+        obj = mesh_mod.gerar_obj_cena(data.get("partes", []))
+        return Response(
+            obj, mimetype="text/plain",
+            headers={"Content-Disposition": 'attachment; filename="cena.obj"'},
         )
 
     # --- Projetos 3D (guardar / carregar entre sessões) ---

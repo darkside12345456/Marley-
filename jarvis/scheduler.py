@@ -26,8 +26,8 @@ class SecurityScheduler:
         self.ultima: dict | None = None
 
     # ------------------------------------------------------------ execução
-    def executar_agora(self) -> dict:
-        rel = security.verificar_ameacas()
+    def registar(self, rel: dict) -> dict:
+        """Guarda um resultado de verificação no histórico (data/security_log.jsonl)."""
         registo = {
             "ts": datetime.now().isoformat(timespec="seconds"),
             "nivel": rel.get("nivel"),
@@ -41,6 +41,24 @@ class SecurityScheduler:
         except Exception:
             pass
         return self.ultima
+
+    def executar_agora(self) -> dict:
+        return self.registar(security.verificar_ameacas())
+
+    def historico(self, limite: int = 50) -> list[dict]:
+        if not _LOG.exists():
+            return []
+        linhas = _LOG.read_text(encoding="utf-8").splitlines()
+        out = []
+        for linha in linhas[-limite:]:
+            linha = linha.strip()
+            if not linha:
+                continue
+            try:
+                out.append(json.loads(linha))
+            except Exception:
+                continue
+        return out
 
     # ------------------------------------------------------------ controlo
     def _loop(self) -> None:
