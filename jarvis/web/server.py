@@ -6,7 +6,9 @@ Serve a interface e expõe um endpoint /api/chat que responde em streaming
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
+from urllib.parse import urlparse
 
 try:
     from flask import Flask, Response, jsonify, request, send_from_directory
@@ -31,6 +33,17 @@ def create_app(assistant: Assistant | None = None) -> Flask:
     # Arranca a verificação de segurança automática, se configurada.
     if config.security_interval and config.security_interval > 0:
         get_scheduler().iniciar(config.security_interval)
+
+    @app.before_request
+    def _bloquear_cross_origin():
+        # App local sem autenticação: recusa pedidos que alteram estado vindos
+        # de outra origem (proteção contra CSRF de sites maliciosos).
+        if request.method in ("POST", "PUT", "DELETE"):
+            origin = request.headers.get("Origin")
+            if origin:
+                host = urlparse(origin).netloc
+                if host and host != request.host:
+                    return ("Origem não permitida.", 403)
 
     @app.route("/")
     def index():
@@ -98,9 +111,10 @@ def create_app(assistant: Assistant | None = None) -> Flask:
         escala = float(request.args.get("escala", 1) or 1)
         segmentos = int(float(request.args.get("segmentos", 0) or 0))
         obj = mesh_mod.gerar_obj(forma, escala, segmentos)
+        nome = re.sub(r"[^A-Za-z0-9_-]", "", forma) or "peca"  # sanitiza o nome do ficheiro
         return Response(
             obj, mimetype="text/plain",
-            headers={"Content-Disposition": f'attachment; filename="{forma}.obj"'},
+            headers={"Content-Disposition": f'attachment; filename="{nome}.obj"'},
         )
 
     @app.route("/api/scene/export", methods=["POST"])
