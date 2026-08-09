@@ -222,8 +222,68 @@
         if (window.HoloLab) window.HoloLab.showScene(acao.partes);
       } else if (acao.tipo === "painel") {
         addPanel(acao.titulo || "Relatório", acao.texto || "");
+      } else if (acao.tipo === "codigo") {
+        addCode(acao.nome || "código", acao.linguagem || "", acao.codigo || "");
       }
     }
+  }
+
+  // ---- Realce de sintaxe (sem bibliotecas) ----
+  const KW = new Set(("function def class return if else elif for while do end then " +
+    "const let var int void float double bool char string public private protected static " +
+    "import from package fn struct impl trait pub use mod match new this self super async await " +
+    "yield lambda switch case break continue try catch except finally throw raise with as in is " +
+    "and or not null nil none true false True False None echo print println puts val fun object " +
+    "interface enum extends implements typeof instanceof export default namespace using " +
+    "select insert update delete where join group order by").split(/\s+/));
+
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+  function highlight(code) {
+    let out = "", i = 0;
+    const n = code.length;
+    const isW = (c) => /[A-Za-z0-9_]/.test(c);
+    while (i < n) {
+      const c = code[i], two = code.slice(i, i + 2);
+      if (two === "//" || c === "#" || two === "--") {
+        let j = i; while (j < n && code[j] !== "\n") j++;
+        out += `<span class="c-com">${esc(code.slice(i, j))}</span>`; i = j;
+      } else if (two === "/*") {
+        let j = code.indexOf("*/", i + 2); j = j < 0 ? n : j + 2;
+        out += `<span class="c-com">${esc(code.slice(i, j))}</span>`; i = j;
+      } else if (c === '"' || c === "'" || c === "`") {
+        let j = i + 1; while (j < n && code[j] !== c) { if (code[j] === "\\") j++; j++; }
+        out += `<span class="c-str">${esc(code.slice(i, j + 1))}</span>`; i = j + 1;
+      } else if (/[0-9]/.test(c)) {
+        let j = i; while (j < n && /[0-9.xXa-fA-F_]/.test(code[j])) j++;
+        out += `<span class="c-num">${esc(code.slice(i, j))}</span>`; i = j;
+      } else if (isW(c)) {
+        let j = i; while (j < n && isW(code[j])) j++;
+        const w = code.slice(i, j);
+        out += KW.has(w) ? `<span class="c-kw">${w}</span>` : esc(w); i = j;
+      } else {
+        out += esc(c); i++;
+      }
+    }
+    return out;
+  }
+
+  function addCode(nome, linguagem, codigo) {
+    const el = document.createElement("div");
+    el.className = "msg bot code-card";
+    const head = document.createElement("div");
+    head.className = "code-head";
+    head.innerHTML = `<span>💻 ${esc(nome)} · ${esc(linguagem)}</span>`;
+    const copy = document.createElement("button");
+    copy.textContent = "copiar";
+    copy.addEventListener("click", () => { navigator.clipboard?.writeText(codigo); copy.textContent = "copiado!"; });
+    head.appendChild(copy);
+    const pre = document.createElement("pre");
+    pre.innerHTML = highlight(codigo);
+    el.appendChild(head);
+    el.appendChild(pre);
+    transcript.appendChild(el);
+    transcript.scrollTop = transcript.scrollHeight;
   }
 
   // ---- Comunicação com o backend ----
@@ -271,11 +331,39 @@
   textInput.addEventListener("keydown", (e) => { if (e.key === "Enter") send(textInput.value); });
   const labBtn = document.getElementById("labBtn");
   if (labBtn) labBtn.addEventListener("click", () => {
-    if (window.HoloLab) window.HoloLab.show("reator", null, "#35e6ff");
+    if (window.HoloLab) window.HoloLab.show("reator", null, window.JARVIS_PRIMARY);
   });
   const shieldBtn = document.getElementById("shieldBtn");
   if (shieldBtn) shieldBtn.addEventListener("click", () =>
-    send("Faz uma verificação de segurança ao meu computador."));
+    send("Faz uma auditoria de segurança completa ao meu computador."));
+
+  // ---- Temas de cor do HUD ----
+  const THEMES = {
+    ciano: { p: "#35e6ff", d: "#1a8ba3" },
+    verde: { p: "#35ffa1", d: "#1a8f5c" },
+    dourado: { p: "#ffd24d", d: "#a37d1a" },
+    stark: { p: "#ff5a5a", d: "#a33636" },
+  };
+  const ORDEM = ["ciano", "verde", "dourado", "stark"];
+  function setTheme(nome) {
+    const t = THEMES[nome] || THEMES.ciano;
+    const root = document.documentElement.style;
+    root.setProperty("--cyan", t.p);
+    root.setProperty("--cyan-dim", t.d);
+    root.setProperty("--glow", `0 0 18px ${t.p}8c`);
+    STATES.idle.color = t.p;
+    STATES.speaking.color = t.p;
+    window.JARVIS_PRIMARY = t.p;
+    localStorage.setItem("jarvisTheme", nome);
+  }
+  const themeBtn = document.getElementById("themeBtn");
+  if (themeBtn) themeBtn.addEventListener("click", () => {
+    const atual = localStorage.getItem("jarvisTheme") || "ciano";
+    const prox = ORDEM[(ORDEM.indexOf(atual) + 1) % ORDEM.length];
+    setTheme(prox);
+    addMsg("Tema: " + prox, "bot");
+  });
+  setTheme(localStorage.getItem("jarvisTheme") || "ciano");
   resetBtn.addEventListener("click", async () => {
     await fetch("/api/reset", { method: "POST" });
     transcript.innerHTML = "";

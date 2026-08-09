@@ -206,6 +206,18 @@ button:hover { border-color: var(--cyan); box-shadow: var(--glow); }
 .msg.link { border-color: var(--cyan); text-decoration: none; display: block; }
 .msg.link:hover { background: rgba(53, 230, 255, 0.2); }
 
+/* Cartão de código com realce de sintaxe */
+.msg.code-card { align-self: stretch; border-color: var(--cyan); background: rgba(2, 12, 22, 0.92); padding: 0; overflow: hidden; }
+.code-head { display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 12px; font-size: 12px; border-bottom: 1px solid rgba(53,230,255,.2); }
+.code-head button { padding: 4px 10px; border-radius: 12px; font-size: 11px; }
+.code-card pre { margin: 0; padding: 12px; overflow-x: auto; font-family: "Consolas","Menlo",monospace;
+  font-size: 12.5px; line-height: 1.5; color: #d6ecff; }
+.c-kw { color: #ff8ad4; font-weight: 600; }
+.c-str { color: #8affc1; }
+.c-com { color: #6b8299; font-style: italic; }
+.c-num { color: #ffd27a; }
+
 /* Cartão de relatório (segurança / apps) */
 .msg.panel { align-self: stretch; border-color: var(--cyan); background: rgba(3, 20, 38, 0.85); }
 .panel-title { font-weight: 700; letter-spacing: 1px; margin-bottom: 6px; text-shadow: var(--glow); }

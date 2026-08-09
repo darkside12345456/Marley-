@@ -164,11 +164,12 @@
     if (autoRotate && !dragging) ang += 0.012;
 
     for (const inst of instancias) {
-      const trans = (p) => [
-        p[0] * inst.escala + inst.pos[0],
-        p[1] * inst.escala + inst.pos[1],
-        p[2] * inst.escala + inst.pos[2],
-      ];
+      const trans = (p) => {
+        const r = aplicarRot(p, inst.rot || [0, 0, 0]);
+        return [r[0] * inst.escala + inst.pos[0],
+                r[1] * inst.escala + inst.pos[1],
+                r[2] * inst.escala + inst.pos[2]];
+      };
       ctx.lineWidth = 1.3;
       ctx.strokeStyle = inst.cor;
       ctx.shadowColor = inst.cor;
@@ -215,10 +216,23 @@
     return projeta(inst.pos, w / 2, h / 2, w * 0.3 * zoomFactor);
   }
 
-  function _inst(forma, cor, escala, segmentos, pos) {
+  function _inst(forma, cor, escala, segmentos, pos, rot) {
     const m = construir(forma, segmentos);
-    return { v: m.v, e: m.e, forma, seg: segmentos || 0, cor: cor || "#35e6ff",
-             escala: escala || 1, pos: pos ? pos.slice() : [0, 0, 0] };
+    return { v: m.v, e: m.e, forma, seg: segmentos || 0, cor: cor || primaria(),
+             escala: escala || 1, pos: pos ? pos.slice() : [0, 0, 0],
+             rot: rot ? rot.slice() : [0, 0, 0] };
+  }
+  function primaria() { return window.JARVIS_PRIMARY || "#35e6ff"; }
+
+  function aplicarRot(p, rot) {
+    let [x, y, z] = p;
+    const [rx, ry, rz] = rot;
+    let y1 = y * Math.cos(rx) - z * Math.sin(rx), z1 = y * Math.sin(rx) + z * Math.cos(rx);
+    y = y1; z = z1;
+    let x2 = x * Math.cos(ry) + z * Math.sin(ry), z2 = -x * Math.sin(ry) + z * Math.cos(ry);
+    x = x2; z = z2;
+    let x3 = x * Math.cos(rz) - y * Math.sin(rz), y3 = x * Math.sin(rz) + y * Math.cos(rz);
+    return [x3, y3, z];
   }
 
   function abrir() {
@@ -228,7 +242,7 @@
 
   function serialize() {
     return instancias.map((i) => ({ forma: i.forma, cor: i.cor, escala: i.escala,
-                                    segmentos: i.seg, pos: i.pos }));
+                                    segmentos: i.seg, pos: i.pos, rot: i.rot }));
   }
 
   function syncScene() {
@@ -248,7 +262,7 @@
   }
   function resetHistory() { history = []; hp = -1; pushHistory(); }
   function rebuild(partes) {
-    instancias = partes.map((p) => _inst(p.forma, p.cor, p.escala, p.segmentos, p.pos));
+    instancias = partes.map((p) => _inst(p.forma, p.cor, p.escala, p.segmentos, p.pos, p.rot));
     selectedIndex = -1;
   }
   function undo() {
@@ -273,7 +287,7 @@
 
   function showScene(partes) {
     if (!partes || !partes.length) return;
-    instancias = partes.map((p) => _inst(p.forma, p.cor, p.escala, p.segmentos, p.pos));
+    instancias = partes.map((p) => _inst(p.forma, p.cor, p.escala, p.segmentos, p.pos, p.rot));
     selectedIndex = -1;
     title.textContent = "CENA (" + partes.length + " peças)";
     abrir();
@@ -297,8 +311,19 @@
     if (selectedIndex < 0) return;
     const s = instancias[selectedIndex];
     const pos = [clamp(s.pos[0] + 0.5), s.pos[1], clamp(s.pos[2] + 0.5)];
-    instancias.push(_inst(s.forma, s.cor, s.escala, s.seg, pos));
+    instancias.push(_inst(s.forma, s.cor, s.escala, s.seg, pos, s.rot));
     selectedIndex = instancias.length - 1;
+    commit();
+  }
+  function scaleSel(f) {
+    if (selectedIndex < 0) return;
+    const i = instancias[selectedIndex];
+    i.escala = Math.max(0.2, Math.min(3, i.escala * f));
+    commit();
+  }
+  function rotSel(eixo, delta) {
+    if (selectedIndex < 0) return;
+    instancias[selectedIndex].rot[eixo] += delta;
     commit();
   }
   function removeSelected() {
@@ -333,9 +358,10 @@
     instancias.forEach((inst, ii) => {
       out.push("o parte" + (ii + 1));
       for (const p of inst.v) {
-        out.push(`v ${(p[0] * inst.escala + inst.pos[0]).toFixed(5)} ` +
-                 `${(p[1] * inst.escala + inst.pos[1]).toFixed(5)} ` +
-                 `${(p[2] * inst.escala + inst.pos[2]).toFixed(5)}`);
+        const r = aplicarRot(p, inst.rot || [0, 0, 0]);
+        out.push(`v ${(r[0] * inst.escala + inst.pos[0]).toFixed(5)} ` +
+                 `${(r[1] * inst.escala + inst.pos[1]).toFixed(5)} ` +
+                 `${(r[2] * inst.escala + inst.pos[2]).toFixed(5)}`);
       }
       for (const [a, b] of inst.e) out.push(`l ${a + 1 + offset} ${b + 1 + offset}`);
       offset += inst.v.length;
@@ -435,12 +461,23 @@
   on("holoRemove", removeSelected);
   on("holoUndo", undo);
   on("holoRedo", redo);
+  on("holoScaleDown", () => scaleSel(0.85));
+  on("holoScaleUp", () => scaleSel(1.18));
+  on("holoRotY", () => rotSel(1, 0.26));
+  on("holoRotX", () => rotSel(0, 0.26));
   window.addEventListener("keydown", (e) => {
     if (panel.classList.contains("hidden")) return;
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
       e.preventDefault(); e.shiftKey ? redo() : undo();
     } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
       e.preventDefault(); redo();
+    } else if (editor && selectedIndex >= 0) {
+      if (e.key === "[") scaleSel(0.85);
+      else if (e.key === "]") scaleSel(1.18);
+      else if (e.key === ",") rotSel(1, -0.26);
+      else if (e.key === ".") rotSel(1, 0.26);
+      else if (e.key === ";") rotSel(0, -0.26);
+      else if (e.key === "'") rotSel(0, 0.26);
     }
   });
   on("holoSave", guardar);
@@ -455,7 +492,7 @@
     title.textContent = editor ? "MODO EDITOR" : "HOLO-LAB";
   });
   const sel = document.getElementById("holoSelect");
-  if (sel) sel.addEventListener("change", () => { if (!editor) show(sel.value, null, "#35e6ff"); });
+  if (sel) sel.addEventListener("change", () => { if (!editor) show(sel.value, null, primaria()); });
 
   // ---- Controlo por rato/toque: rodar, mover peças, zoom ----
   function toCanvas(e) {

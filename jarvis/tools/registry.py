@@ -388,6 +388,27 @@ def build_default_registry(memory=None, allow_shell: bool = False, actions=None)
         lambda: get_scheduler().estado(),
     )
 
+    def _auditoria_seguranca() -> dict:
+        rel = security_mod.verificar_ameacas()
+        topicos = ["atualizacoes", "backups", "palavras-passe",
+                   "autenticacao de dois fatores", "phishing", "ransomware"]
+        recomendacoes = [f"• {knowledge_mod.SEGURANCA[t]}" for t in topicos
+                         if t in knowledge_mod.SEGURANCA]
+        texto = (rel["relatorio"] + "\n\n— Recomendações de proteção —\n"
+                 + "\n".join(recomendacoes)
+                 + "\n\n(Auditoria defensiva e indicativa; não substitui um antivírus.)")
+        _painel(f"🛡️ Auditoria de Segurança — risco {rel['nivel']}", texto)
+        return {"nivel": rel["nivel"], "relatorio": texto,
+                "processos": rel.get("processos"), "rede": rel.get("rede")}
+
+    reg.register(
+        "auditoria_seguranca",
+        "Faz uma AUDITORIA de segurança completa: junta a verificação do "
+        "computador com recomendações de proteção num só relatório.",
+        {"type": "object", "properties": {}},
+        _auditoria_seguranca,
+    )
+
     # --- Guardar / carregar projetos 3D do Holo-Lab ---
     def _guardar_projeto(nome: str) -> dict:
         res = get_store().guardar(nome)
@@ -440,11 +461,11 @@ def build_default_registry(memory=None, allow_shell: bool = False, actions=None)
     def _escrever_codigo(nome: str, linguagem: str, codigo: str) -> dict:
         res = coding_mod.guardar_codigo(nome, linguagem, codigo)
         if res.get("ok"):
-            _painel(f"💻 Código escrito ({res['linguagem']})",
-                    f"Ficheiro: {res['ficheiro']} · {res['linhas']} linha(s).")
-            if actions is not None and res["ficheiro"].endswith((".html", ".htm")):
-                rel = res["ficheiro"].split("workspace/", 1)[-1]
-                actions.add("abrir_pagina", url=f"/workspace/{rel}", titulo=nome)
+            if actions is not None:
+                actions.add("codigo", nome=res["ficheiro"], linguagem=linguagem, codigo=codigo)
+                if res["ficheiro"].endswith((".html", ".htm")):
+                    rel = res["ficheiro"].split("workspace/", 1)[-1]
+                    actions.add("abrir_pagina", url=f"/workspace/{rel}", titulo=nome)
         return res
 
     reg.register(

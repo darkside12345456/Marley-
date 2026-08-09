@@ -29,7 +29,9 @@ holográfico** ao estilo do filme e a correr **localmente e gratuito** com o
   abre as apps web no browser.
 - **Cibersegurança** — verifica ameaças no PC (processos, rede, arranque). É
   **defensivo e só de leitura**: deteta e avisa, nunca apaga nada.
-- **HUD holográfico** — orbe/reator animado, ondas de voz e transcrição.
+- **HUD holográfico** — orbe/reator animado, ondas de voz e transcrição, com
+  **temas de cor** (🎨 ciano, verde, dourado, vermelho Stark).
+- **Programa em qualquer linguagem** e mostra o código com **realce de sintaxe**.
 
 ---
 
@@ -113,6 +115,7 @@ python -m jarvis voz
 | `exportar_modelo` | Exporta uma peça 3D (sólido fechado) para `.obj` |
 | `guardar_projeto` / `carregar_projeto` / `listar_projetos` | Gere projetos 3D entre sessões |
 | `verificar_ameacas` / `analisar_processos` / `analisar_rede` / `analisar_ficheiros` / `calcular_hash` | Cibersegurança (só de leitura) |
+| `auditoria_seguranca` | Auditoria: verificação + recomendações num relatório |
 | `agendar_verificacao` / `estado_seguranca` | Verificações de segurança automáticas |
 | `executar_comando` | Comandos do sistema — **desligado por omissão** |
 
@@ -131,8 +134,10 @@ zoom** (funciona também por toque no telemóvel).
 
 **Editor visual:** carrega em **✏️ Editor**, escolhe uma peça e usa **＋** para a
 adicionar; depois **arrasta as peças com o rato** para as posicionar e monta
-cenas (ex: um robô). Seleciona uma peça e usa o **seletor de cor** para a pintar,
-**⧉** para a duplicar e **🗑** para a remover.
+cenas (ex: um robô). Com uma peça selecionada podes: **seletor de cor** para a
+pintar, **⧉** duplicar, **🗑** remover, **－🔍/＋🔍** escalar, **⟳/⤵** rodar (ou
+teclas `[` `]` escala e `,` `.` `;` `'` rotação), e **↶/↷** (Ctrl+Z / Ctrl+Y)
+para desfazer/refazer.
 
 **Guardar/carregar projetos:** **💾** guarda a cena com um nome (e uma
 **miniatura**) e **📂** abre uma **galeria** dos teus projetos para escolheres.

@@ -41,15 +41,22 @@ def _resolver_forma(peca: str | None, forma: str | None) -> str:
     return "reator"
 
 
-def plan_model(peca=None, forma=None, cor=None, tamanho=None, segmentos=None) -> dict:
-    """Planeia um modelo 3D paramétrico -> {peca, forma, cor, escala, segmentos}."""
+def plan_model(peca=None, forma=None, cor=None, tamanho=None, segmentos=None, rot=None) -> dict:
+    """Planeia um modelo 3D paramétrico -> {peca, forma, cor, escala, segmentos, rot}."""
     f = _resolver_forma(peca, forma)
+    r = [0.0, 0.0, 0.0]
+    if isinstance(rot, (list, tuple)) and len(rot) == 3:
+        try:
+            r = [float(rot[0]), float(rot[1]), float(rot[2])]
+        except (TypeError, ValueError):
+            r = [0.0, 0.0, 0.0]
     return {
         "peca": peca or f,
         "forma": f,
         "cor": cor or "#35e6ff",
         "escala": _num(tamanho, 0.2, 3.0, 1.0),
         "segmentos": int(_num(segmentos, 6, 48, 0)),  # 0 = usar valor por defeito
+        "rot": r,
     }
 
 
@@ -67,7 +74,8 @@ def plan_scene(partes) -> dict:
             continue
         m = plan_model(
             parte.get("peca"), parte.get("forma"), parte.get("cor"),
-            parte.get("tamanho"), parte.get("segmentos"),
+            parte.get("tamanho") or parte.get("escala"), parte.get("segmentos"),
+            parte.get("rot"),
         )
         pos = parte.get("pos") or [0, 0, 0]
         try:
