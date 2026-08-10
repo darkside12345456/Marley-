@@ -19,6 +19,7 @@ from .. import security as security_mod
 from .. import knowledge as knowledge_mod
 from .. import mesh as mesh_mod
 from ..config import WORKSPACE_DIR
+from ..commands import get_pending
 from ..scheduler import get_scheduler
 from ..scenes import get_store
 
@@ -73,7 +74,8 @@ class ToolRegistry:
         return str(result)
 
 
-def build_default_registry(memory=None, allow_shell: bool = False, actions=None) -> ToolRegistry:
+def build_default_registry(memory=None, allow_shell: bool = False, actions=None,
+                           confirm_shell: bool = True) -> ToolRegistry:
     reg = ToolRegistry()
 
     reg.register(
@@ -180,15 +182,29 @@ def build_default_registry(memory=None, allow_shell: bool = False, actions=None)
             lambda chave=None: memory.recall(chave),
         )
 
+    def _executar_comando(comando: str):
+        if not allow_shell:
+            return system_mod.run_command(comando, False)  # devolve a mensagem "desativado"
+        if confirm_shell:
+            if actions is None:
+                return {"erro": "Este comando precisa de confirmação; usa o HUD ou o "
+                        "modo interativo do terminal."}
+            cid = get_pending().add(comando)
+            actions.add("confirmar_comando", id=cid, comando=comando)
+            return {"pendente": True,
+                    "mensagem": f"Aguardo a confirmação do utilizador para executar: {comando}"}
+        return system_mod.run_command(comando, True)  # modo automático (confirmação desligada)
+
     reg.register(
         "executar_comando",
-        "Executa um comando na linha de comandos do sistema. Requer permissão ativa.",
+        "Executa um comando na linha de comandos do sistema. Requer permissão ativa "
+        "e, por omissão, confirmação explícita do utilizador antes de correr.",
         {
             "type": "object",
             "properties": {"comando": {"type": "string"}},
             "required": ["comando"],
         },
-        lambda comando: system_mod.run_command(comando, allow_shell),
+        _executar_comando,
     )
 
     # --- Ferramentas de interface (comandam o HUD) ---

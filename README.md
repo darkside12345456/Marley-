@@ -205,7 +205,19 @@ Por segurança, `executar_comando` está desativado. Para o ligar, define no `.e
 JARVIS_ALLOW_SHELL=1
 ```
 
-Só o faz se compreenderes o risco de deixar o assistente executar comandos.
+**Confirmação obrigatória:** mesmo com a shell ligada, a Sonny **pede sempre a
+tua confirmação** antes de correr cada comando — aparece um cartão com o comando
+e botões **✓ Confirmar** / **✕ Cancelar** (no terminal, pergunta `Confirmar? (s/N)`).
+Nada corre sem a tua aprovação. Só o servidor executa comandos que a Sonny
+propôs e que continuam pendentes (por id de uso único).
+
+Se souberes o que estás a fazer e quiseres execução automática (sem confirmar):
+
+```
+JARVIS_CONFIRM_SHELL=0
+```
+
+Só liga isto se compreenderes o risco de deixar o assistente executar comandos.
 
 ---
 

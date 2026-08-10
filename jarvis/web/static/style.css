@@ -232,6 +232,15 @@ button:hover { border-color: var(--cyan); box-shadow: var(--glow); }
 .msg.link { border-color: var(--cyan); text-decoration: none; display: block; }
 .msg.link:hover { background: rgba(53, 230, 255, 0.2); }
 
+/* Cartão de confirmação de comando */
+.msg.cmd-confirm { align-self: stretch; border-color: #ffb84d; background: rgba(40, 26, 6, 0.9); }
+.cmd-title { font-weight: 700; color: #ffd24d; margin-bottom: 6px; }
+.msg.cmd-confirm pre { white-space: pre-wrap; font-family: "Consolas","Menlo",monospace;
+  font-size: 13px; color: #ffe9c2; background: rgba(0,0,0,.35); padding: 8px 10px; border-radius: 8px; }
+.cmd-btns { display: flex; gap: 10px; margin-top: 10px; }
+.cmd-btns button:first-child { border-color: #35ffa1; color: #35ffa1; }
+.cmd-btns button:last-child { border-color: #ff5a5a; color: #ff5a5a; }
+
 /* Cartão de código com realce de sintaxe */
 .msg.code-card { align-self: stretch; border-color: var(--cyan); background: rgba(2, 12, 22, 0.92); padding: 0; overflow: hidden; }
 .code-head { display: flex; justify-content: space-between; align-items: center;

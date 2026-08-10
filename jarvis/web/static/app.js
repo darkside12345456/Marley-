@@ -257,8 +257,54 @@
         addPanel(acao.titulo || "Relatório", acao.texto || "");
       } else if (acao.tipo === "codigo") {
         addCode(acao.nome || "código", acao.linguagem || "", acao.codigo || "");
+      } else if (acao.tipo === "confirmar_comando") {
+        addCommandConfirm(acao.id, acao.comando || "");
       }
     }
+  }
+
+  // ---- Confirmação de comando do sistema (nada corre sem o "Confirmar") ----
+  function addCommandConfirm(id, comando) {
+    const el = document.createElement("div");
+    el.className = "msg bot cmd-confirm";
+    const t = document.createElement("div");
+    t.className = "cmd-title";
+    t.textContent = "⚠️ A Sonny quer executar este comando:";
+    const pre = document.createElement("pre");
+    pre.textContent = comando;            // textContent -> sem risco de HTML
+    const btns = document.createElement("div");
+    btns.className = "cmd-btns";
+    const ok = document.createElement("button");
+    ok.textContent = "✓ Confirmar e executar";
+    const no = document.createElement("button");
+    no.textContent = "✕ Cancelar";
+    btns.appendChild(ok); btns.appendChild(no);
+    el.appendChild(t); el.appendChild(pre); el.appendChild(btns);
+    transcript.appendChild(el);
+    transcript.scrollTop = transcript.scrollHeight;
+
+    no.addEventListener("click", () => {
+      el.remove();
+      addMsg("Comando cancelado.", "bot");
+    });
+    ok.addEventListener("click", async () => {
+      ok.disabled = true; no.disabled = true; ok.textContent = "a executar…";
+      try {
+        const r = await fetch("/api/command/run", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id }),
+        });
+        const res = await r.json();
+        el.remove();
+        if (res.erro) { addPanel("⚠️ Comando", res.erro); return; }
+        const saida = (res.saida || "").trim() || "(sem saída)";
+        const erro = (res.erro || "").trim();
+        addPanel("🖥️ Resultado (código " + res.codigo + ")",
+                 saida + (erro ? "\n\n[erros]\n" + erro : ""));
+      } catch {
+        addPanel("⚠️ Comando", "Falha ao executar.");
+      }
+    });
   }
 
   // ---- Realce de sintaxe (sem bibliotecas) ----

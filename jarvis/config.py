@@ -51,6 +51,8 @@ class Config:
     # --- Segurança ---
     # Comandos do sistema estão desativados por omissão. Ativar com cuidado.
     allow_shell: bool = os.getenv("JARVIS_ALLOW_SHELL", "0") == "1"
+    # Mesmo com a shell ligada, pedir confirmação antes de cada comando (recomendado).
+    confirm_shell: bool = os.getenv("JARVIS_CONFIRM_SHELL", "1") == "1"
     # Verificação automática de ameaças de X em X horas (0 = desligado).
     security_interval: float = float(os.getenv("JARVIS_SECURITY_INTERVAL", "0"))
 

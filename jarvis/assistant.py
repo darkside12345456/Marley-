@@ -15,7 +15,8 @@ class Assistant:
         self.memory = Memory(config.db_path)
         self.actions = ActionSink()
         self.last_actions: list[dict] = []
-        self.tools = build_default_registry(self.memory, config.allow_shell, self.actions)
+        self.tools = build_default_registry(self.memory, config.allow_shell, self.actions,
+                                            config.confirm_shell)
 
     def _base_messages(self) -> list[dict]:
         system = self.config.system_prompt()

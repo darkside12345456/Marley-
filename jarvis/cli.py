@@ -26,6 +26,19 @@ def _executar_acoes(assistant: Assistant) -> None:
                 print(f"   (abre manualmente: {acao['url']})")
         elif acao.get("tipo") == "modelo":
             print(f"   [Holo-Lab 3D disponível no HUD web: peça '{acao.get('peca')}']")
+        elif acao.get("tipo") == "confirmar_comando":
+            from .tools import system as system_mod
+
+            print(f"\n   ⚠️  A Sonny quer executar: {acao.get('comando')}")
+            try:
+                resp = input("   Confirmar? (s/N) ").strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                resp = "n"
+            if resp in {"s", "sim", "y"}:
+                res = system_mod.run_command(acao.get("comando", ""), True)
+                print(f"   {res.get('saida') or res.get('erro') or '(sem saída)'}")
+            else:
+                print("   Comando cancelado.")
 
 
 def _banner() -> None:

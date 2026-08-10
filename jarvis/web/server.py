@@ -21,6 +21,8 @@ from ..assistant import Assistant
 from ..config import WORKSPACE_DIR, config
 from ..scheduler import get_scheduler
 from ..scenes import get_store
+from ..commands import get_pending
+from ..tools import system as system_mod
 from .. import mesh as mesh_mod
 
 STATIC = Path(__file__).parent / "static"
@@ -96,6 +98,17 @@ def create_app(assistant: Assistant | None = None) -> Flask:
     def reset():
         assistant.reset()
         return jsonify({"ok": True})
+
+    @app.route("/api/command/run", methods=["POST"])
+    def command_run():
+        # Só corre comandos que a Sonny propôs e continuam pendentes (por id).
+        if not config.allow_shell:
+            return jsonify({"erro": "Comandos do sistema estão desativados."}), 403
+        data = request.get_json(force=True) or {}
+        comando = get_pending().pop(data.get("id", ""))
+        if comando is None:
+            return jsonify({"erro": "Comando não encontrado ou expirado."}), 404
+        return jsonify(system_mod.run_command(comando, True))
 
     @app.route("/api/security/last")
     def security_last():
