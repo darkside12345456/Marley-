@@ -81,6 +81,10 @@ def run_web() -> None:
 def run_text() -> None:
     _banner()
     assistant = Assistant(config)
+    try:
+        assistant.brain.resolver_modelo()
+    except Exception:
+        pass
     if not assistant.brain.is_available():
         print("⚠️  Ollama não está a responder. Corre 'ollama serve' e "
               f"'ollama pull {config.model}'.\n")
@@ -107,6 +111,10 @@ def run_voice() -> None:
     from .voice import Voice
 
     assistant = Assistant(config)
+    try:
+        assistant.brain.resolver_modelo()
+    except Exception:
+        pass
     voice = Voice(config.language)
     if not voice.can_listen:
         print("ℹ️  Microfone/STT indisponível — vou usar o teclado. "

@@ -32,6 +32,10 @@ STATIC = Path(__file__).parent / "static"
 
 def create_app(assistant: Assistant | None = None) -> Flask:
     assistant = assistant or Assistant(config)
+    try:
+        assistant.brain.resolver_modelo()  # usa a etiqueta de modelo instalada
+    except Exception:
+        pass
     app = Flask(__name__, static_folder=None)
 
     # Arranca a verificação de segurança automática, se configurada.

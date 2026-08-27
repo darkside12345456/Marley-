@@ -78,3 +78,29 @@ class Brain:
             return True
         except Exception:
             return False
+
+    def modelos_disponiveis(self) -> list[str]:
+        try:
+            req = urllib.request.Request(f"{self.host}/api/tags")
+            data = json.loads(urllib.request.urlopen(req, timeout=5).read().decode("utf-8"))
+            return [m.get("name", "") for m in data.get("models", [])]
+        except Exception:
+            return []
+
+    def resolver_modelo(self) -> str:
+        """Ajusta o modelo à etiqueta realmente instalada.
+
+        Ex: pediste 'llama3.1' mas só tens 'llama3.1:8b' -> passa a usar essa.
+        Se nada bater certo, mantém o configurado.
+        """
+        tags = self.modelos_disponiveis()
+        if not tags or self.model in tags:
+            return self.model
+        base = self.model.split(":")[0]
+        if f"{base}:latest" in tags:  # o Ollama resolve o :latest sozinho
+            return self.model
+        for t in tags:
+            if t.split(":")[0] == base:
+                self.model = t
+                return self.model
+        return self.model
