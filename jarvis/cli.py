@@ -57,10 +57,22 @@ def _banner() -> None:
 def run_web() -> None:
     from .web.server import run
 
-    url = f"http://{config.host}:{config.port}"
-    print(f"🌐 HUD do Jarvis em {url}")
+    porta = config.port
+    if config.host in ("0.0.0.0", "::"):
+        from .telemetry import _ip
+        ip = _ip()
+        print(f"🌐 Neste PC:                        http://localhost:{porta}")
+        print(f"📱 Noutros aparelhos (mesma rede):  http://{ip}:{porta}")
+        print("   ℹ️  No telemóvel, o texto funciona; a voz por microfone precisa de")
+        print("      HTTPS (limitação dos browsers) — a Sonny continua a falar na mesma.")
+        abrir = f"http://localhost:{porta}"
+    else:
+        abrir = f"http://{config.host}:{porta}"
+        print(f"🌐 HUD da Sonny em {abrir}")
+        print("   Para aceder de outros aparelhos na mesma rede Wi-Fi, define")
+        print("   JARVIS_HTTP_HOST=0.0.0.0 no ficheiro .env e arranca outra vez.")
     try:
-        webbrowser.open(url)
+        webbrowser.open(abrir)
     except Exception:
         pass
     run()

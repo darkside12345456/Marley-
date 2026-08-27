@@ -246,6 +246,28 @@ Só liga isto se compreenderes o risco de deixar o assistente executar comandos.
 
 ---
 
+## 📱 Aceder na mesma rede (telemóvel, tablet)
+
+Por omissão a Sonny só é acessível **no próprio PC** (privado). Para a abrires
+noutros aparelhos na **mesma rede Wi-Fi**, define no `.env`:
+
+```
+JARVIS_HTTP_HOST=0.0.0.0
+```
+
+Ao arrancar (`jarvis`), o terminal mostra-te o endereço a usar no telemóvel,
+por exemplo `http://192.168.1.42:5000`.
+
+> Notas honestas:
+> - Isto expõe a Sonny a **quem estiver na tua rede Wi-Fi** — ok em casa, evita
+>   em redes públicas.
+> - No telemóvel o **texto funciona** e a Sonny **fala**; a **voz por microfone**
+>   pode estar bloqueada porque os browsers só a permitem em `localhost` ou HTTPS.
+> - Para aceder **de qualquer lado pela internet** seria preciso adicionar
+>   palavra-passe primeiro (por segurança) — diz se quiseres.
+
+---
+
 ## 🖥️ App de ambiente de trabalho
 
 Podes empacotar o Jarvis num executável único (sem precisar de ter o Python
