@@ -24,6 +24,7 @@ from ..scenes import get_store
 from ..commands import get_pending
 from ..tools import system as system_mod
 from .. import mesh as mesh_mod
+from ..telemetry import get_telemetry
 
 STATIC = Path(__file__).parent / "static"
 
@@ -109,6 +110,10 @@ def create_app(assistant: Assistant | None = None) -> Flask:
         if comando is None:
             return jsonify({"erro": "Comando não encontrado ou expirado."}), 404
         return jsonify(system_mod.run_command(comando, True))
+
+    @app.route("/api/telemetry")
+    def telemetry():
+        return jsonify(get_telemetry())
 
     @app.route("/api/security/last")
     def security_last():

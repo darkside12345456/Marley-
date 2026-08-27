@@ -544,6 +544,56 @@
   checkSecurity();
   setInterval(checkSecurity, 30000);
 
+  // ---- Telemetria do sistema ----
+  let uptimeSec = 0;
+  function fmtUptime(s) {
+    const h = String(Math.floor(s / 3600)).padStart(2, "0");
+    const m = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+    const sec = String(s % 60).padStart(2, "0");
+    return `${h}:${m}:${sec}`;
+  }
+  function setBar(id, pct) {
+    const el = document.getElementById(id);
+    if (el) el.style.width = (pct == null ? 0 : Math.min(100, pct)) + "%";
+  }
+  async function checkTelemetry() {
+    try {
+      const t = await (await fetch("/api/telemetry")).json();
+      const set = (id, v, suf) => { const e = document.getElementById(id); if (e) e.textContent = (v == null ? "n/d" : v + (suf || "")); };
+      set("tCpu", t.cpu, "%"); setBar("tCpuBar", t.cpu);
+      set("tRam", t.ram, "%"); setBar("tRamBar", t.ram);
+      set("tDisk", t.disco, "%"); setBar("tDiskBar", t.disco);
+      set("tIp", t.ip, "");
+      uptimeSec = t.uptime || uptimeSec;
+    } catch { /* offline */ }
+  }
+  checkTelemetry();
+  setInterval(checkTelemetry, 3000);
+  setInterval(() => {
+    uptimeSec++;
+    const e = document.getElementById("tUptime");
+    if (e) e.textContent = fmtUptime(uptimeSec);
+  }, 1000);
+
+  // ---- Arsenal (capacidades reais, clicáveis) ----
+  const ARSENAL = [
+    { i: "📰", t: "Notícias em direto", run: () => send("Quais são as últimas notícias e novidades de hoje?") },
+    { i: "🛡️", t: "Auditoria de segurança", run: () => send("Faz uma auditoria de segurança completa ao meu computador.") },
+    { i: "🔬", t: "Holo-Lab 3D", run: () => window.HoloLab && window.HoloLab.show("reator", null, window.JARVIS_PRIMARY) },
+    { i: "💻", t: "Escrever código", run: () => send("Escreve-me um pequeno exemplo de código em Python.") },
+    { i: "🧩", t: "Criar aplicação", run: () => send("Cria-me uma app web de exemplo.") },
+    { i: "🌦️", t: "Meteorologia", run: () => send("Como está o tempo em Lisboa?") },
+  ];
+  const arsenalList = document.getElementById("arsenalList");
+  if (arsenalList) {
+    for (const a of ARSENAL) {
+      const li = document.createElement("li");
+      li.innerHTML = `<span class="ar-i">${a.i}</span><span>${a.t}</span>`;
+      li.addEventListener("click", a.run);
+      arsenalList.appendChild(li);
+    }
+  }
+
   // Saudação inicial
   setTimeout(() => {
     const hi = "Sistemas online. Olá! Em que posso ajudar?";

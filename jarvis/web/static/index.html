@@ -22,6 +22,25 @@
   </header>
 
   <main class="stage">
+    <!-- Painel lateral: telemetria + arsenal -->
+    <aside class="hud-side" id="hudSide">
+      <div class="hud-card">
+        <div class="hud-card-title">// SISTEMA</div>
+        <div class="tele-row"><span>CPU</span><b id="tCpu">—</b></div>
+        <div class="tele-bar"><i id="tCpuBar"></i></div>
+        <div class="tele-row"><span>MEMÓRIA</span><b id="tRam">—</b></div>
+        <div class="tele-bar"><i id="tRamBar"></i></div>
+        <div class="tele-row"><span>DISCO</span><b id="tDisk">—</b></div>
+        <div class="tele-bar"><i id="tDiskBar"></i></div>
+        <div class="tele-row"><span>IP LOCAL</span><b id="tIp">—</b></div>
+        <div class="tele-row"><span>ATIVA</span><b id="tUptime">00:00:00</b></div>
+      </div>
+      <div class="hud-card">
+        <div class="hud-card-title">// ARSENAL</div>
+        <ul class="arsenal" id="arsenalList"></ul>
+      </div>
+    </aside>
+
     <div class="reactor" id="reactor">
       <canvas id="orb" width="520" height="520"></canvas>
       <div class="state-label" id="stateLabel">EM ESPERA</div>
