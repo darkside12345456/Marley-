@@ -60,6 +60,10 @@ class Config:
     db_path: Path = field(default_factory=lambda: DATA_DIR / "jarvis.db")
     max_history: int = int(os.getenv("JARVIS_MAX_HISTORY", "20"))
 
+    # --- Objetivo / meta ---
+    meta_target: float = float(os.getenv("JARVIS_META", "100000"))
+    meta_label: str = os.getenv("JARVIS_META_LABEL", "Objetivo")
+
     def system_prompt(self) -> str:
         return (
             f"És a {self.name}, uma assistente pessoal inteligente (do género "
