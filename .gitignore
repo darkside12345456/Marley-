@@ -10,6 +10,7 @@ env/
 .env
 data/*.db
 data/*.jsonl
+data/*.json
 data/scenes/
 workspace/
 

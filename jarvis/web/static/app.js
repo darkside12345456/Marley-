@@ -594,9 +594,90 @@
     }
   }
 
+  // ---- Relógio ----
+  function tickClock() {
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, "0");
+    const el = document.getElementById("clock");
+    if (el) el.textContent = `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  function saudacao() {
+    const h = new Date().getHours();
+    if (h < 6) return "Boa madrugada";
+    if (h < 13) return "Bom dia";
+    if (h < 20) return "Boa tarde";
+    return "Boa noite";
+  }
+
+  // ---- Objetivo / meta ----
+  function fmtNum(n) { return Math.round(n).toLocaleString("pt-PT").replace(/,/g, " "); }
+  async function checkMeta() {
+    try {
+      const m = await (await fetch("/api/meta")).json();
+      const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+      set("metaLabel", m.label);
+      set("metaAtual", fmtNum(m.atual));
+      set("metaAlvo", "/ " + fmtNum(m.alvo));
+      set("metaPct", m.percent + "%");
+      const bar = document.getElementById("metaBar");
+      if (bar) bar.style.width = Math.min(100, m.percent) + "%";
+    } catch { /* offline */ }
+  }
+  const metaCard = document.getElementById("metaCard");
+  if (metaCard) metaCard.addEventListener("click", async () => {
+    const v = prompt("Progresso atual do objetivo:");
+    if (v === null || v.trim() === "") return;
+    const atual = parseFloat(v.replace(/\s/g, "").replace(",", "."));
+    if (isNaN(atual)) return;
+    await fetch("/api/meta", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ atual }) });
+    checkMeta();
+  });
+  checkMeta();
+  setInterval(checkMeta, 15000);
+
+  // ---- Módulos / estado dos subsistemas ----
+  async function checkModules() {
+    try {
+      const { modulos } = await (await fetch("/api/modules")).json();
+      const ul = document.getElementById("modulesList");
+      if (!ul) return;
+      ul.innerHTML = "";
+      for (const m of modulos) {
+        const live = m.estado === "LIVE" || m.estado === "ATIVA";
+        const li = document.createElement("li");
+        const nome = document.createElement("span");
+        nome.textContent = m.nome;
+        const est = document.createElement("b");
+        est.className = "mod-est " + (live ? "on" : "off");
+        est.textContent = m.estado;
+        li.appendChild(nome); li.appendChild(est);
+        ul.appendChild(li);
+      }
+    } catch { /* offline */ }
+  }
+  checkModules();
+  setInterval(checkModules, 10000);
+
+  // ---- Relatório de atividade ----
+  const reportBtn = document.getElementById("reportBtn");
+  if (reportBtn) reportBtn.addEventListener("click", async () => {
+    const { atividade } = await (await fetch("/api/activity")).json();
+    if (!atividade || !atividade.length) {
+      addPanel("📋 Relatório de atividade", "Ainda não fiz nenhuma tarefa nesta sessão.");
+      return;
+    }
+    const linhas = atividade.map((a) => `${a.ts}  ·  ${a.resumo}`).join("\n");
+    addPanel("📋 Relatório de atividade (" + atividade.length + ")", linhas);
+  });
+
   // Saudação inicial
   setTimeout(() => {
-    const hi = "Sistemas online. Olá! Em que posso ajudar?";
+    const nome = document.querySelector(".brand").textContent;
+    const hi = `${saudacao()}. Sistemas online — ${nome} ao seu dispor. Em que posso ajudar?`;
     addMsg(hi, "bot");
     speak(hi);
   }, 900);

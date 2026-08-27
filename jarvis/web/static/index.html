@@ -15,15 +15,25 @@
 
   <header class="hud-top">
     <div class="brand">SONNY</div>
-    <div class="status" id="status">
-      <span class="dot" id="dot"></span>
-      <span id="statusText">a ligar…</span>
+    <div class="top-right">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="status" id="status">
+        <span class="dot" id="dot"></span>
+        <span id="statusText">a ligar…</span>
+      </div>
     </div>
   </header>
 
   <main class="stage">
     <!-- Painel lateral: telemetria + arsenal -->
     <aside class="hud-side" id="hudSide">
+      <div class="hud-card meta-card" id="metaCard" title="Clica para atualizar o progresso">
+        <div class="hud-card-title">// OBJETIVO</div>
+        <div class="meta-label" id="metaLabel">Objetivo</div>
+        <div class="meta-value"><b id="metaAtual">0</b> <span id="metaAlvo">/ 100 000</span></div>
+        <div class="meta-bar"><i id="metaBar"></i></div>
+        <div class="meta-pct" id="metaPct">0%</div>
+      </div>
       <div class="hud-card">
         <div class="hud-card-title">// SISTEMA</div>
         <div class="tele-row"><span>CPU</span><b id="tCpu">—</b></div>
@@ -34,6 +44,10 @@
         <div class="tele-bar"><i id="tDiskBar"></i></div>
         <div class="tele-row"><span>IP LOCAL</span><b id="tIp">—</b></div>
         <div class="tele-row"><span>ATIVA</span><b id="tUptime">00:00:00</b></div>
+      </div>
+      <div class="hud-card">
+        <div class="hud-card-title">// MÓDULOS</div>
+        <ul class="modules" id="modulesList"></ul>
       </div>
       <div class="hud-card">
         <div class="hud-card-title">// ARSENAL</div>
@@ -107,6 +121,7 @@
       <button id="wakeBtn" class="reset" title="Palavra de ativação: dizer o nome">🎧</button>
       <button id="labBtn" class="reset" title="Abrir o Holo-Lab (3D)">🔬</button>
       <button id="newsBtn" class="reset" title="Últimas notícias">📰</button>
+      <button id="reportBtn" class="reset" title="Relatório de atividade">📋</button>
       <button id="shieldBtn" class="reset" title="Verificar ameaças (cibersegurança)">🛡️</button>
       <button id="resetBtn" class="reset" title="Limpar memória da conversa">⟲</button>
     </div>
