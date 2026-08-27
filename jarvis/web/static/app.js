@@ -472,6 +472,16 @@
   document.querySelectorAll(".tdot").forEach((b) =>
     b.addEventListener("click", () => setTheme(b.dataset.theme)));
 
+  // ---- Modo claro / escuro ----
+  function setLight(on) {
+    document.body.classList.toggle("light", on);
+    localStorage.setItem("jarvisLight", on ? "1" : "0");
+  }
+  const lightToggle = document.getElementById("lightToggle");
+  if (lightToggle) lightToggle.addEventListener("click", () =>
+    setLight(!document.body.classList.contains("light")));
+  setLight(localStorage.getItem("jarvisLight") === "1");
+
   // ---- Gráfico do histórico de segurança ----
   const NIVEL_N = { BAIXO: 1, "MÉDIO": 2, ALTO: 3 };
   const NIVEL_COR = { BAIXO: "#35ffa1", "MÉDIO": "#ffb84d", ALTO: "#ff5a5a" };
@@ -576,19 +586,27 @@
   }, 1000);
 
   // ---- Arsenal (capacidades reais, clicáveis) ----
+  const SVG = {
+    news: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="7" y1="9.5" x2="13" y2="9.5"/><line x1="7" y1="14" x2="13" y2="14"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3 8.2-7 10-4-1.8-7-5.4-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>',
+    cube: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 21 7v10l-9 5-9-5V7z"/><path d="M12 12 21 7M12 12v10M12 12 3 7"/></svg>',
+    code: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8l-4 4 4 4"/><path d="M15 8l4 4-4 4"/></svg>',
+    app: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    weather: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8.5" r="3"/><path d="M8 2.5v1M3.5 8.5h1M8 13.5v.5M12.5 8.5h.5M4.8 5.3l.7.7M11.2 5.3l-.7.7"/><path d="M9 19h8a3 3 0 0 0 .3-6A4 4 0 0 0 10 12.5"/></svg>',
+  };
   const ARSENAL = [
-    { i: "📰", t: "Notícias em direto", run: () => send("Quais são as últimas notícias e novidades de hoje?") },
-    { i: "🛡️", t: "Auditoria de segurança", run: () => send("Faz uma auditoria de segurança completa ao meu computador.") },
-    { i: "🔬", t: "Holo-Lab 3D", run: () => window.HoloLab && window.HoloLab.show("reator", null, window.JARVIS_PRIMARY) },
-    { i: "💻", t: "Escrever código", run: () => send("Escreve-me um pequeno exemplo de código em Python.") },
-    { i: "🧩", t: "Criar aplicação", run: () => send("Cria-me uma app web de exemplo.") },
-    { i: "🌦️", t: "Meteorologia", run: () => send("Como está o tempo em Lisboa?") },
+    { s: SVG.news, t: "Notícias em direto", run: () => send("Quais são as últimas notícias e novidades de hoje?") },
+    { s: SVG.shield, t: "Auditoria de segurança", run: () => send("Faz uma auditoria de segurança completa ao meu computador.") },
+    { s: SVG.cube, t: "Holo-Lab 3D", run: () => window.HoloLab && window.HoloLab.show("reator", null, window.JARVIS_PRIMARY) },
+    { s: SVG.code, t: "Escrever código", run: () => send("Escreve-me um pequeno exemplo de código em Python.") },
+    { s: SVG.app, t: "Criar aplicação", run: () => send("Cria-me uma app web de exemplo.") },
+    { s: SVG.weather, t: "Meteorologia", run: () => send("Como está o tempo em Lisboa?") },
   ];
   const arsenalList = document.getElementById("arsenalList");
   if (arsenalList) {
     for (const a of ARSENAL) {
       const li = document.createElement("li");
-      li.innerHTML = `<span class="ar-i">${a.i}</span><span>${a.t}</span>`;
+      li.innerHTML = `<span class="ar-i">${a.s}</span><span>${a.t}</span>`;
       li.addEventListener("click", a.run);
       arsenalList.appendChild(li);
     }

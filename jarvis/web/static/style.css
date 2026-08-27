@@ -28,6 +28,38 @@
   --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
 }
 
+/* ---------------- Modo claro ---------------- */
+body.light {
+  --text: #10203a;
+  --muted: #566677;
+  --glass: rgba(12, 26, 48, 0.04);
+  --glass-strong: rgba(12, 26, 48, 0.06);
+  --stroke: rgba(12, 26, 48, 0.12);
+  --stroke-soft: rgba(12, 26, 48, 0.08);
+  background:
+    radial-gradient(1200px 700px at 50% -10%, rgba(56, 225, 255, 0.16), transparent 60%),
+    radial-gradient(900px 600px at 85% 110%, rgba(120, 90, 255, 0.12), transparent 55%),
+    linear-gradient(180deg, #eef3fb, #dbe4f1);
+  color: var(--text);
+}
+body.light .brand {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  color: #0c2b3c;
+  -webkit-text-fill-color: #0c2b3c;
+  filter: none;
+}
+body.light .msg.bot { color: #1a2a3c; }
+body.light .msg.panel pre, body.light .code-card pre { color: #24384c; }
+body.light .aurora { opacity: 0.3; }
+body.light .grid-bg {
+  background-image:
+    linear-gradient(rgba(12, 26, 48, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12, 26, 48, 0.05) 1px, transparent 1px);
+}
+body.light .tele-bar, body.light .meta-bar { background: rgba(12, 26, 48, 0.08); }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body { height: 100%; }
@@ -422,7 +454,8 @@ input[type=range] { accent-color: var(--cyan); }
   border: 1px solid transparent; transition: 0.18s var(--ease);
 }
 .arsenal li:hover { background: rgba(56, 225, 255, 0.10); border-color: rgba(56, 225, 255, 0.28); transform: translateX(3px); }
-.arsenal .ar-i { font-size: 15px; width: 20px; text-align: center; }
+.arsenal .ar-i { width: 20px; display: flex; align-items: center; justify-content: center; color: var(--cyan); }
+.arsenal .ar-i svg { width: 17px; height: 17px; }
 
 /* Objetivo / meta */
 .meta-card { cursor: pointer; border-color: rgba(56, 225, 255, 0.22); }
