@@ -44,8 +44,18 @@ gratuito** com o [Ollama](https://ollama.com).
 
 ### 1. Instalar o Ollama (o "cérebro")
 
-Descarrega em **https://ollama.com**, depois puxa um modelo com suporte a
-ferramentas:
+O Ollama corre **localmente no teu computador** — é isso que dá o cérebro local
+e a privacidade. Descarrega em **https://ollama.com** (ou, em Linux/macOS,
+`curl -fsSL https://ollama.com/install.sh | sh`).
+
+**Atalho:** depois de instalar as dependências (passo 2), corre
+
+```bash
+jarvis setup
+```
+
+Este assistente verifica se o Ollama está instalado, a correr e com o modelo
+pronto — e, se faltar, **descarrega o modelo por ti**. Em alternativa, à mão:
 
 ```bash
 ollama pull llama3.1      # recomendado (bom com ferramentas)
@@ -87,6 +97,7 @@ Abre automaticamente `http://127.0.0.1:5000`. Carrega no 🎙️ e fala, ou escr
 
 | Comando | O que faz |
 |---|---|
+| `jarvis setup` | **Configura o Ollama** (verifica e descarrega o modelo) |
 | `python -m jarvis` | HUD holográfico no browser (voz + visual) |
 | `python -m jarvis voz` | Conversa por voz no terminal |
 | `python -m jarvis texto` | Conversa por texto no terminal |

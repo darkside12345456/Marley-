@@ -122,6 +122,9 @@ def main(argv: list[str] | None = None) -> None:
 
     if cmd in {"web", "hud"}:
         run_web()
+    elif cmd in {"setup", "instalar", "configurar"}:
+        from .setup import run_setup
+        run_setup()
     elif cmd in {"voz", "voice"}:
         run_voice()
     elif cmd in {"texto", "text", "chat"}:
