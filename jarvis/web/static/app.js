@@ -612,33 +612,6 @@
     return "Boa noite";
   }
 
-  // ---- Objetivo / meta ----
-  function fmtNum(n) { return Math.round(n).toLocaleString("pt-PT").replace(/,/g, " "); }
-  async function checkMeta() {
-    try {
-      const m = await (await fetch("/api/meta")).json();
-      const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
-      set("metaLabel", m.label);
-      set("metaAtual", fmtNum(m.atual));
-      set("metaAlvo", "/ " + fmtNum(m.alvo));
-      set("metaPct", m.percent + "%");
-      const bar = document.getElementById("metaBar");
-      if (bar) bar.style.width = Math.min(100, m.percent) + "%";
-    } catch { /* offline */ }
-  }
-  const metaCard = document.getElementById("metaCard");
-  if (metaCard) metaCard.addEventListener("click", async () => {
-    const v = prompt("Progresso atual do objetivo:");
-    if (v === null || v.trim() === "") return;
-    const atual = parseFloat(v.replace(/\s/g, "").replace(",", "."));
-    if (isNaN(atual)) return;
-    await fetch("/api/meta", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ atual }) });
-    checkMeta();
-  });
-  checkMeta();
-  setInterval(checkMeta, 15000);
-
   // ---- Módulos / estado dos subsistemas ----
   async function checkModules() {
     try {

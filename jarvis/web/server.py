@@ -25,7 +25,6 @@ from ..commands import get_pending
 from ..tools import system as system_mod
 from .. import mesh as mesh_mod
 from ..telemetry import get_telemetry
-from ..meta import get_meta, set_meta
 
 STATIC = Path(__file__).parent / "static"
 
@@ -119,15 +118,6 @@ def create_app(assistant: Assistant | None = None) -> Flask:
     @app.route("/api/activity")
     def activity():
         return jsonify({"atividade": assistant.activity[-40:]})
-
-    @app.route("/api/meta", methods=["GET"])
-    def meta_get():
-        return jsonify(get_meta())
-
-    @app.route("/api/meta", methods=["POST"])
-    def meta_set():
-        d = request.get_json(force=True) or {}
-        return jsonify(set_meta(d.get("atual"), d.get("alvo"), d.get("label")))
 
     @app.route("/api/modules")
     def modules():
