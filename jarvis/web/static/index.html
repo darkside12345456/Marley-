@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SONNY</title>
   <link rel="icon" type="image/png" href="/static/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
@@ -72,18 +75,22 @@
   <section class="transcript" id="transcript"></section>
 
   <footer class="controls">
-    <button id="micBtn" class="mic" title="Falar">
-      <span class="mic-icon">🎙️</span>
-    </button>
-    <input id="textInput" type="text" placeholder="Escreve ou fala com o Jarvis…" autocomplete="off" />
-    <button id="sendBtn" class="send">Enviar</button>
-    <button id="settingsBtn" class="reset" title="Definições">⚙️</button>
-    <button id="themeBtn" class="reset" title="Mudar tema de cor">🎨</button>
-    <button id="wakeBtn" class="reset" title="Palavra de ativação: dizer o nome">🎧</button>
-    <button id="labBtn" class="reset" title="Abrir o Holo-Lab (3D)">🔬</button>
-    <button id="newsBtn" class="reset" title="Últimas notícias">📰</button>
-    <button id="shieldBtn" class="reset" title="Verificar ameaças (cibersegurança)">🛡️</button>
-    <button id="resetBtn" class="reset" title="Limpar memória da conversa">⟲</button>
+    <div class="bar">
+      <button id="micBtn" class="mic" title="Falar">
+        <span class="mic-icon">🎙️</span>
+      </button>
+      <input id="textInput" type="text" placeholder="Escreve ou fala com a Sonny…" autocomplete="off" />
+      <button id="sendBtn" class="send">Enviar</button>
+    </div>
+    <div class="tools">
+      <button id="settingsBtn" class="reset" title="Definições">⚙️</button>
+      <button id="themeBtn" class="reset" title="Mudar tema de cor">🎨</button>
+      <button id="wakeBtn" class="reset" title="Palavra de ativação: dizer o nome">🎧</button>
+      <button id="labBtn" class="reset" title="Abrir o Holo-Lab (3D)">🔬</button>
+      <button id="newsBtn" class="reset" title="Últimas notícias">📰</button>
+      <button id="shieldBtn" class="reset" title="Verificar ameaças (cibersegurança)">🛡️</button>
+      <button id="resetBtn" class="reset" title="Limpar memória da conversa">⟲</button>
+    </div>
   </footer>
 
   <!-- Painel de definições -->
