@@ -80,8 +80,14 @@ def build_default_registry(memory=None, allow_shell: bool = False, actions=None,
 
     reg.register(
         "obter_hora",
-        "Devolve a data e hora atuais.",
-        {"type": "object", "properties": {}},
+        "Devolve a data e a hora atuais. Se indicares um local, dá a hora dessa "
+        "cidade no fuso horário correto (ex: 'Tóquio', 'Nova Iorque').",
+        {
+            "type": "object",
+            "properties": {
+                "local": {"type": "string", "description": "Cidade (opcional; vazio = aqui)"}
+            },
+        },
         basics_mod.current_time,
     )
     reg.register(

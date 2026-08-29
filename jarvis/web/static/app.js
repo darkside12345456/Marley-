@@ -12,10 +12,10 @@
   const resetBtn = document.getElementById("resetBtn");
 
   const STATES = {
-    idle: { label: "EM ESPERA", color: "#35e6ff", speed: 0.4, amp: 0.5 },
-    listening: { label: "A OUVIR", color: "#35ffa1", speed: 1.2, amp: 1.0 },
-    thinking: { label: "A PENSAR", color: "#ffb84d", speed: 2.2, amp: 0.7 },
-    speaking: { label: "A FALAR", color: "#35e6ff", speed: 1.6, amp: 1.3 },
+    idle: { label: "EM ESPERA", color: "#e9b44c", speed: 0.4, amp: 0.5 },
+    listening: { label: "A OUVIR", color: "#ffd98a", speed: 1.2, amp: 1.1 },
+    thinking: { label: "A PENSAR", color: "#c8892b", speed: 2.2, amp: 0.8 },
+    speaking: { label: "A FALAR", color: "#f0c674", speed: 1.6, amp: 1.4 },
   };
   let state = "idle";
   let t = 0;
@@ -433,8 +433,7 @@
     root.setProperty("--cyan", t.p);
     root.setProperty("--cyan-dim", t.d);
     root.setProperty("--glow", `0 0 18px ${t.p}8c`);
-    STATES.idle.color = t.p;
-    STATES.speaking.color = t.p;
+    // Nota: a esfera central mantém-se dourada, independente do tema.
     window.JARVIS_PRIMARY = t.p;
     localStorage.setItem("jarvisTheme", nome);
   }

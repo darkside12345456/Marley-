@@ -276,6 +276,7 @@ body {
 }
 #textInput {
   flex: 1;
+  min-width: 0;              /* permite encolher em ecrãs estreitos */
   background: transparent;
   border: none;
   color: var(--text);
@@ -480,10 +481,35 @@ input[type=range] { accent-color: var(--cyan); }
 .mod-est.off { color: #ff6b6b; background: rgba(255, 107, 107, 0.12); }
 
 /* ---------------- Responsivo ---------------- */
-@media (max-width: 1080px) { .hud-side { display: none; } }
-@media (max-width: 760px) {
-  .hud-top { padding: 16px 20px; }
-  .transcript { position: static; width: auto; margin: 0 16px; height: 24vh; }
-  .reactor { width: 300px; }
-  .bar { width: 96vw; }
+@media (max-width: 1080px) {
+  .hud-side { display: none; }
+  .stage { padding: 0 12px; }
 }
+@media (max-width: 760px) {
+  .hud-top { padding: 14px 16px; }
+  .brand { font-size: 16px; letter-spacing: 0.28em; }
+  #statusText { display: none; }          /* no telemóvel fica só o pontinho */
+  .status { padding: 6px 9px; }
+  .top-right { gap: 8px; }
+  .clock { font-size: 12px; }
+  .transcript { position: static; width: auto; margin: 0 12px; height: 18vh; max-width: 100%; }
+  .transcript .msg { max-width: 90%; }
+  .reactor { width: 88vw; max-width: 400px; }
+  #orb { width: 100%; height: auto; }
+  .controls { padding: 10px 6px 18px; }
+  .bar { width: 94vw; }
+  .tools { max-width: 100vw; gap: 6px; }
+  .reset { width: 40px; height: 40px; }
+}
+@media (max-width: 760px) {
+  .aurora { display: none; }          /* evita largura extra fora do ecrã */
+}
+@media (max-width: 480px) {
+  .send span { display: none; }       /* botão Enviar só com o ícone */
+  .send { padding: 11px 14px; }
+  .bar { width: 95vw; gap: 8px; }
+  .tools { gap: 5px; }
+  .reset { width: 37px; height: 37px; font-size: 15px; }
+  .transcript .msg { max-width: 94%; font-size: 13.5px; }
+}
+html, body { max-width: 100vw; overflow-x: hidden; }

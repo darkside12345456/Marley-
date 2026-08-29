@@ -57,6 +57,20 @@ class Assistant:
         """Pergunta com ciclo de ferramentas. Devolve a resposta final em texto."""
         self.memory.add_message("user", user_text)
         self.actions.clear()
+
+        # Resposta direta e fiável (horas, tempo, data, notícias) — não depende
+        # do modelo, por isso é instantânea mesmo com um modelo local lento.
+        from . import intents
+        try:
+            direto = intents.responder(user_text)
+        except Exception:  # noqa: BLE001
+            direto = None
+        if direto is not None:
+            self.memory.add_message("assistant", direto)
+            self._registar_atividade("resposta_direta")
+            self.last_actions = self.actions.drain()
+            return direto
+
         messages = self._base_messages()
 
         for _ in range(max_tool_rounds):

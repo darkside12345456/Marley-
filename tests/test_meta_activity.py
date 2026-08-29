@@ -50,9 +50,10 @@ def test_atividade_registada_apos_ferramenta():
             if self.i == 1:
                 return {"role": "assistant", "content": "",
                         "tool_calls": [{"function": {"name": "obter_hora", "arguments": {}}}]}
-            return {"role": "assistant", "content": "São horas."}
+            return {"role": "assistant", "content": "Feito."}
     a = Assistant(config)
     a.brain = Fake()
-    a.ask("que horas são?")
+    # texto que NÃO é resposta direta (não é hora/tempo/data) -> vai ao modelo
+    a.ask("faz-me um favor especial")
     assert a.activity and a.activity[-1]["ferramenta"] == "obter_hora"
     a.close()
